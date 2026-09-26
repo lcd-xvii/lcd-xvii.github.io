@@ -10,7 +10,6 @@
 <meta property="og:image" content="https://github.com/lcd-xvii.png">
 <link rel="icon" href="https://github.com/lcd-xvii.png">
 
-<!-- 提前设好主题，避免刷新时闪白/闪黑 -->
 <script>
   (function () {
     try {
@@ -31,33 +30,39 @@
     --bg: #ffffff;
     --bg-soft: #f6f7f9;
     --card: #ffffff;
-    --nav-bg: rgba(255, 255, 255, .75);
+    --nav-bg: rgba(255, 255, 255, .72);
     --text: #101828;
     --text-soft: #5b6472;
     --border: #e6e8eb;
     --accent: #2563eb;
     --accent-2: #7c3aed;
     --accent-fg: #ffffff;
+    --accent-soft: rgba(37, 99, 235, .16);
+    --particle: 37, 99, 235;
     --shadow: 0 1px 2px rgba(16, 24, 40, .04), 0 12px 32px -14px rgba(16, 24, 40, .18);
+    --glow: 0 0 0 1px rgba(37, 99, 235, .25), 0 18px 50px -22px rgba(37, 99, 235, .55);
   }
 
   html[data-theme="dark"] {
     --bg: #0a0c10;
     --bg-soft: #101318;
     --card: #111419;
-    --nav-bg: rgba(10, 12, 16, .75);
+    --nav-bg: rgba(10, 12, 16, .72);
     --text: #eef1f5;
     --text-soft: #98a2b3;
     --border: #1f242c;
     --accent: #8ab4ff;
     --accent-2: #d0a2ff;
     --accent-fg: #0a0c10;
+    --accent-soft: rgba(138, 180, 255, .15);
+    --particle: 138, 180, 255;
     --shadow: 0 1px 2px rgba(0, 0, 0, .5), 0 14px 34px -16px rgba(0, 0, 0, .8);
+    --glow: 0 0 0 1px rgba(138, 180, 255, .3), 0 18px 50px -22px rgba(138, 180, 255, .45);
   }
 
   html {
     scroll-behavior: smooth;
-    scroll-padding-top: 88px;
+    scroll-padding-top: 96px;
     -webkit-text-size-adjust: 100%;
   }
 
@@ -69,33 +74,79 @@
     line-height: 1.7;
     -webkit-font-smoothing: antialiased;
     overflow-x: hidden;
-    transition: background-color .3s ease, color .3s ease;
+    transition: background-color .4s ease, color .4s ease;
   }
 
-  /* 背景光晕 */
-  .glow { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
-  .glow::before,
-  .glow::after {
-    content: ""; position: absolute; border-radius: 50%; filter: blur(110px);
+  ::selection { background: var(--accent); color: var(--accent-fg); }
+
+  /* ================= 背景层 ================= */
+  #fx {
+    position: fixed; inset: 0;
+    width: 100%; height: 100%;
+    z-index: 0; pointer-events: none;
   }
-  .glow::before {
-    width: 480px; height: 480px; background: var(--accent);
-    opacity: .16; top: -220px; left: -160px;
+
+  .glow {
+    position: fixed; inset: 0; z-index: 0;
+    pointer-events: none; overflow: hidden;
   }
-  .glow::after {
-    width: 520px; height: 520px; background: var(--accent-2);
-    opacity: .13; bottom: -260px; right: -180px;
+  .glow i {
+    position: absolute; border-radius: 50%;
+    filter: blur(120px); display: block;
+  }
+  .glow i:nth-child(1) {
+    width: 520px; height: 520px; background: var(--accent);
+    opacity: .17; top: -240px; left: -170px;
+    animation: float1 18s ease-in-out infinite;
+  }
+  .glow i:nth-child(2) {
+    width: 560px; height: 560px; background: var(--accent-2);
+    opacity: .14; bottom: -280px; right: -200px;
+    animation: float2 22s ease-in-out infinite;
+  }
+  @keyframes float1 {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(60px, 40px) scale(1.12); }
+  }
+  @keyframes float2 {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(-70px, -50px) scale(1.15); }
+  }
+
+  .spotlight {
+    position: fixed; left: 0; top: 0;
+    width: 640px; height: 640px; margin: -320px 0 0 -320px;
+    border-radius: 50%;
+    background: radial-gradient(circle, var(--accent-soft), transparent 62%);
+    z-index: 1; pointer-events: none;
+    opacity: 0; transition: opacity .5s ease;
+    will-change: transform;
+  }
+  .spotlight.on { opacity: 1; }
+
+  /* ================= 滚动进度条 ================= */
+  .progress {
+    position: fixed; top: 0; left: 0; z-index: 100;
+    height: 3px; width: 0;
+    background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    box-shadow: 0 0 12px var(--accent-soft);
+    transition: width .08s linear;
   }
 
   .wrap { max-width: 1080px; margin: 0 auto; padding: 0 24px; }
 
-  /* ---------- 顶栏 ---------- */
+  /* ================= 顶栏 ================= */
   .nav {
     position: sticky; top: 0; z-index: 50;
     background: var(--nav-bg);
-    backdrop-filter: saturate(180%) blur(14px);
-    -webkit-backdrop-filter: saturate(180%) blur(14px);
-    border-bottom: 1px solid var(--border);
+    backdrop-filter: saturate(180%) blur(16px);
+    -webkit-backdrop-filter: saturate(180%) blur(16px);
+    border-bottom: 1px solid transparent;
+    transition: border-color .3s ease, box-shadow .3s ease;
+  }
+  .nav.scrolled {
+    border-bottom-color: var(--border);
+    box-shadow: 0 8px 30px -20px rgba(0, 0, 0, .5);
   }
   .nav-inner {
     max-width: 1080px; margin: 0 auto; padding: 0 24px;
@@ -104,15 +155,36 @@
   .logo {
     font-weight: 800; font-size: 1.05rem; letter-spacing: -.01em;
     color: var(--text); text-decoration: none; margin-right: auto;
+    display: inline-flex; align-items: center; gap: 8px;
+  }
+  .logo::before {
+    content: ""; width: 9px; height: 9px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    box-shadow: 0 0 12px var(--accent);
+    animation: pulse 2.4s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.35); opacity: .65; }
   }
   .logo span { color: var(--accent); }
 
   .nav-links { display: flex; gap: 26px; }
   .nav-links a {
+    position: relative;
     font-size: .92rem; color: var(--text-soft);
-    text-decoration: none; transition: color .2s ease;
+    text-decoration: none; transition: color .25s ease;
+    padding: 4px 0;
+  }
+  .nav-links a::after {
+    content: ""; position: absolute; left: 0; bottom: 0;
+    width: 100%; height: 2px; border-radius: 2px;
+    background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    transform: scaleX(0); transform-origin: right;
+    transition: transform .32s cubic-bezier(.2, .8, .3, 1);
   }
   .nav-links a:hover { color: var(--accent); }
+  .nav-links a:hover::after { transform: scaleX(1); transform-origin: left; }
 
   .icon-btn {
     width: 38px; height: 38px; flex: none;
@@ -120,39 +192,79 @@
     border-radius: 10px; border: 1px solid var(--border);
     background: var(--card); color: var(--text-soft);
     cursor: pointer;
-    transition: color .2s ease, border-color .2s ease, transform .2s ease;
+    transition: color .25s, border-color .25s, transform .25s, box-shadow .25s;
   }
-  .icon-btn:hover { color: var(--text); border-color: var(--accent); transform: translateY(-1px); }
+  .icon-btn:hover {
+    color: var(--accent); border-color: var(--accent);
+    box-shadow: 0 0 0 4px var(--accent-soft);
+  }
   .icon-btn svg { width: 19px; height: 19px; }
   html[data-theme="dark"] .icon-moon { display: none; }
   html[data-theme="light"] .icon-sun { display: none; }
 
-  /* ---------- 通用 section ---------- */
-  main { position: relative; z-index: 1; }
-  section { padding: 92px 0; }
+  /* ================= 布局 ================= */
+  main { position: relative; z-index: 2; }
+  section { padding: 94px 0; }
 
-  .section-head { margin-bottom: 36px; }
+  .section-head { margin-bottom: 38px; }
   .section-head h2 {
     font-size: clamp(1.5rem, 3.2vw, 2rem);
     letter-spacing: -.02em; line-height: 1.25;
+    display: inline-block; position: relative;
   }
-  .section-head p { color: var(--text-soft); margin-top: 6px; font-size: .96rem; }
+  .section-head h2::after {
+    content: ""; position: absolute; left: 0; bottom: -8px;
+    width: 100%; height: 3px; border-radius: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--accent-2), transparent);
+    transform: scaleX(0); transform-origin: left;
+    transition: transform .7s cubic-bezier(.2, .8, .3, 1) .15s;
+  }
+  .section-head.in h2::after { transform: scaleX(1); }
+  .section-head p { color: var(--text-soft); margin-top: 16px; font-size: .96rem; }
 
-  /* ---------- Hero ---------- */
-  .hero { padding: 72px 0 88px; }
+  /* ================= Hero ================= */
+  .hero { padding: 76px 0 92px; }
   .hero-inner {
     display: grid; grid-template-columns: 1fr auto;
     gap: 64px; align-items: center;
   }
-  .eyebrow { color: var(--text-soft); font-size: .95rem; margin-bottom: 10px; }
+  .eyebrow {
+    color: var(--text-soft); font-size: .95rem; margin-bottom: 10px;
+    display: inline-flex; align-items: center; gap: 8px;
+  }
+  .eyebrow::before {
+    content: ""; width: 26px; height: 1px; background: var(--accent);
+    display: inline-block;
+  }
+
   .hero h1 {
-    font-size: clamp(2.6rem, 7vw, 4.1rem);
-    font-weight: 800; line-height: 1.05; letter-spacing: -.035em;
-    margin-bottom: 18px;
-    background: linear-gradient(115deg, var(--text) 25%, var(--accent) 70%, var(--accent-2));
+    font-size: clamp(2.7rem, 7.4vw, 4.3rem);
+    font-weight: 800; line-height: 1.04; letter-spacing: -.04em;
+    margin-bottom: 16px;
+    background: linear-gradient(100deg,
+      var(--text) 0%, var(--accent) 28%, var(--accent-2) 48%,
+      var(--text) 72%, var(--text) 100%);
+    background-size: 260% 100%;
     -webkit-background-clip: text; background-clip: text;
     -webkit-text-fill-color: transparent; color: transparent;
+    animation: flow 9s linear infinite;
   }
+  @keyframes flow {
+    to { background-position: 260% 0; }
+  }
+
+  .type-line {
+    font-size: 1.02rem; color: var(--text-soft);
+    min-height: 1.8em; margin-bottom: 22px;
+    font-variant-numeric: tabular-nums;
+  }
+  .type-line .txt {
+    border-right: 2px solid var(--accent);
+    padding-right: 3px;
+    animation: caret 1.05s step-end infinite;
+  }
+  @keyframes caret { 50% { border-color: transparent; } }
+
   .lead {
     color: var(--text-soft); font-size: 1.05rem;
     max-width: 46ch; margin-bottom: 30px;
@@ -160,70 +272,159 @@
 
   .actions { display: flex; gap: 12px; flex-wrap: wrap; }
   .btn {
+    position: relative;
     display: inline-flex; align-items: center; gap: 8px;
     padding: 11px 22px; border-radius: 12px;
     border: 1px solid var(--border); background: var(--card);
     color: var(--text); text-decoration: none;
     font-size: .94rem; font-weight: 500;
     box-shadow: var(--shadow);
-    transition: transform .18s ease, border-color .18s ease, background-color .18s ease;
+    transition: transform .22s cubic-bezier(.2, .8, .3, 1),
+                border-color .25s, box-shadow .25s, background-color .25s;
+    will-change: transform;
   }
-  .btn:hover { transform: translateY(-2px); border-color: var(--accent); }
+  .btn:hover { border-color: var(--accent); box-shadow: var(--glow); }
   .btn svg { width: 18px; height: 18px; }
   .btn-primary {
     background: linear-gradient(120deg, var(--accent), var(--accent-2));
     color: var(--accent-fg); border-color: transparent;
+    background-size: 160% 100%;
   }
-  .btn-primary:hover { border-color: transparent; }
+  .btn-primary:hover {
+    border-color: transparent;
+    box-shadow: 0 14px 40px -16px var(--accent);
+    background-position: 100% 0;
+  }
 
   .avatar-wrap {
-    padding: 9px; border-radius: 50%;
-    background: linear-gradient(140deg, var(--accent), var(--accent-2));
+    position: relative; padding: 9px; border-radius: 50%;
     box-shadow: var(--shadow);
+    animation: bob 6s ease-in-out infinite;
+  }
+  .avatar-wrap::before {
+    content: ""; position: absolute; inset: -10px; border-radius: 50%;
+    background: conic-gradient(from 0deg, transparent 0deg, var(--accent) 90deg,
+                transparent 180deg, var(--accent-2) 270deg, transparent 360deg);
+    animation: spin 7s linear infinite;
+    opacity: .55; z-index: -1;
+    filter: blur(3px);
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes bob {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-9px); }
   }
   .avatar-wrap img {
     display: block; width: 180px; height: 180px;
     border-radius: 50%; border: 5px solid var(--bg);
     background: var(--bg-soft); object-fit: cover;
+    position: relative; z-index: 1;
   }
 
-  /* ---------- 关于 ---------- */
+  /* ================= 关于 ================= */
   .about-text { color: var(--text-soft); max-width: 68ch; }
   .about-text p + p { margin-top: 14px; }
   .about-text strong { color: var(--text); font-weight: 600; }
 
-  .tags { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 28px; }
+  .tags { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 30px; }
   .tag {
-    padding: 7px 14px; border-radius: 999px;
+    position: relative; overflow: hidden;
+    padding: 7px 15px; border-radius: 999px;
     border: 1px solid var(--border); background: var(--card);
     font-size: .85rem; color: var(--text-soft);
-    transition: color .2s ease, border-color .2s ease;
+    transition: color .25s, border-color .25s, transform .25s;
   }
-  .tag:hover { color: var(--accent); border-color: var(--accent); }
+  .tag::before {
+    content: ""; position: absolute; inset: 0;
+    background: linear-gradient(120deg, var(--accent), var(--accent-2));
+    opacity: 0; transition: opacity .3s ease; z-index: -1;
+  }
+  .tag:hover {
+    color: var(--accent-fg); border-color: transparent;
+    transform: translateY(-2px);
+  }
+  .tag:hover::before { opacity: 1; }
 
-  /* ---------- 项目 ---------- */
+  /* ================= 统计 ================= */
+  .stats-band { padding: 0 0 94px; }
+  .stats {
+    display: grid; gap: 16px;
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .stat {
+    position: relative; overflow: hidden;
+    padding: 26px 24px; border-radius: 16px;
+    border: 1px solid var(--border); background: var(--card);
+    transition: transform .3s cubic-bezier(.2, .8, .3, 1), border-color .3s, box-shadow .3s;
+  }
+  .stat:hover { transform: translateY(-4px); border-color: var(--accent); box-shadow: var(--glow); }
+  .stat .num {
+    display: block;
+    font-size: clamp(1.7rem, 4vw, 2.3rem);
+    font-weight: 800; letter-spacing: -.03em; line-height: 1.1;
+    background: linear-gradient(120deg, var(--accent), var(--accent-2));
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent; color: transparent;
+    font-variant-numeric: tabular-nums;
+  }
+  .stat .lbl {
+    display: block; margin-top: 6px;
+    font-size: .86rem; color: var(--text-soft);
+  }
+  .stat .spark {
+    position: absolute; right: -30px; bottom: -40px;
+    width: 130px; height: 130px; border-radius: 50%;
+    background: var(--accent); opacity: .07;
+    transition: transform .5s ease, opacity .5s ease;
+  }
+  .stat:hover .spark { transform: scale(1.5); opacity: .13; }
+
+  /* ================= 项目卡片 ================= */
   .grid {
     display: grid; gap: 18px;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
   }
   .card {
+    position: relative; overflow: hidden;
     display: flex; flex-direction: column;
-    padding: 22px; border-radius: 16px;
+    padding: 22px 22px 22px 26px; border-radius: 16px;
     border: 1px solid var(--border); background: var(--card);
     text-decoration: none; color: inherit;
-    transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease;
+    transition: transform .3s cubic-bezier(.2, .8, .3, 1),
+                border-color .3s, box-shadow .3s;
+    will-change: transform;
   }
-  .card:hover {
-    transform: translateY(-4px);
-    border-color: var(--accent);
-    box-shadow: var(--shadow);
+  .card::before {
+    content: ""; position: absolute; inset: 0; border-radius: inherit;
+    background: radial-gradient(320px circle at var(--mx, 50%) var(--my, 50%),
+                var(--accent-soft), transparent 62%);
+    opacity: 0; transition: opacity .35s ease;
+    pointer-events: none;
   }
+  .card:hover::before { opacity: 1; }
+  .card:hover { border-color: var(--accent); box-shadow: var(--glow); }
+
+  .card .bar {
+    position: absolute; left: 0; top: 16px; bottom: 16px;
+    width: 3px; border-radius: 0 3px 3px 0;
+    background: var(--c, var(--accent));
+    transform: scaleY(.35); transform-origin: top;
+    transition: transform .4s cubic-bezier(.2, .8, .3, 1);
+  }
+  .card:hover .bar { transform: scaleY(1); }
+
   .card h3 {
     font-size: 1.02rem; font-weight: 600;
     display: flex; align-items: center; gap: 8px;
     margin-bottom: 8px; word-break: break-word;
   }
-  .card h3 svg { width: 16px; height: 16px; flex: none; color: var(--text-soft); }
+  .card h3 svg {
+    width: 16px; height: 16px; flex: none;
+    color: var(--text-soft);
+    transition: color .3s, transform .3s;
+  }
+  .card:hover h3 svg { color: var(--accent); transform: rotate(-8deg) scale(1.12); }
+
   .card .desc {
     color: var(--text-soft); font-size: .9rem;
     margin-bottom: 16px; flex: 1;
@@ -236,73 +437,126 @@
     width: 10px; height: 10px; border-radius: 50%;
     display: inline-block; background: var(--c, var(--accent));
     margin-right: -8px;
+    box-shadow: 0 0 10px var(--c, var(--accent));
   }
   .meta-item { display: inline-flex; align-items: center; gap: 6px; }
 
   .fallback { color: var(--text-soft); font-size: .95rem; }
   .fallback a { color: var(--accent); }
 
-  /* ---------- 联系 ---------- */
+  /* 骨架屏 */
+  .skeleton {
+    height: 168px; border-radius: 16px;
+    border: 1px solid var(--border); background: var(--card);
+    position: relative; overflow: hidden;
+  }
+  .skeleton::after {
+    content: ""; position: absolute; inset: 0;
+    background: linear-gradient(90deg, transparent, var(--accent-soft), transparent);
+    transform: translateX(-100%);
+    animation: shimmer 1.5s infinite;
+  }
+  @keyframes shimmer { to { transform: translateX(100%); } }
+
+  /* ================= 联系 ================= */
   .links {
     display: grid; gap: 14px;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
   }
   .link-card {
+    position: relative; overflow: hidden;
     display: flex; align-items: center; gap: 14px;
     padding: 18px 20px; border-radius: 14px;
     border: 1px solid var(--border); background: var(--card);
     text-decoration: none; color: inherit;
-    transition: transform .2s ease, border-color .2s ease;
+    transition: transform .3s cubic-bezier(.2, .8, .3, 1),
+                border-color .3s, box-shadow .3s;
   }
-  .link-card:hover { transform: translateY(-3px); border-color: var(--accent); }
-  .link-card svg { width: 22px; height: 22px; flex: none; color: var(--accent); }
-  .link-card .label { font-size: .8rem; color: var(--text-soft); }
-  .link-card .value { font-size: .94rem; font-weight: 500; word-break: break-all; }
+  .link-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--accent);
+    box-shadow: var(--glow);
+  }
+  .link-card svg {
+    width: 22px; height: 22px; flex: none; color: var(--accent);
+    transition: transform .35s cubic-bezier(.2, .8, .3, 1);
+  }
+  .link-card:hover svg { transform: scale(1.18) rotate(-6deg); }
+  .link-card .label { display: block; font-size: .78rem; color: var(--text-soft); }
+  .link-card .value { display: block; font-size: .94rem; font-weight: 500; word-break: break-all; }
 
-  /* ---------- 页脚 ---------- */
+  /* ================= 页脚 ================= */
   footer {
-    position: relative; z-index: 1;
+    position: relative; z-index: 2;
     border-top: 1px solid var(--border);
     padding: 30px 24px; text-align: center;
     color: var(--text-soft); font-size: .85rem;
   }
 
-  /* ---------- 滚动出现 ---------- */
+  /* ================= 回到顶部 ================= */
+  .to-top {
+    position: fixed; right: 22px; bottom: 22px; z-index: 60;
+    width: 44px; height: 44px; border-radius: 13px;
+    display: grid; place-items: center;
+    border: 1px solid var(--border); background: var(--card);
+    color: var(--text-soft); cursor: pointer;
+    opacity: 0; visibility: hidden; transform: translateY(14px) scale(.9);
+    transition: opacity .35s, visibility .35s, transform .35s cubic-bezier(.2, .8, .3, 1),
+                color .25s, border-color .25s, box-shadow .25s;
+    box-shadow: var(--shadow);
+  }
+  .to-top.show { opacity: 1; visibility: visible; transform: none; }
+  .to-top:hover { color: var(--accent); border-color: var(--accent); box-shadow: var(--glow); }
+  .to-top svg { width: 20px; height: 20px; }
+
+  /* ================= 滚动出现 ================= */
   .reveal {
-    opacity: 0; transform: translateY(18px);
-    transition: opacity .6s ease, transform .6s ease;
+    opacity: 0; transform: translateY(22px);
+    transition: opacity .7s cubic-bezier(.2, .8, .3, 1),
+                transform .7s cubic-bezier(.2, .8, .3, 1);
   }
   .reveal.in { opacity: 1; transform: none; }
 
-  /* ---------- 响应式 ---------- */
-  @media (max-width: 820px) {
-    .hero-inner { grid-template-columns: 1fr; gap: 36px; text-align: center; justify-items: center; }
+  /* ================= 响应式 ================= */
+  @media (max-width: 860px) {
+    .hero-inner { grid-template-columns: 1fr; gap: 38px; text-align: center; justify-items: center; }
     .avatar-wrap { order: -1; }
-    .avatar-wrap img { width: 150px; height: 150px; }
+    .avatar-wrap img { width: 152px; height: 152px; }
     .actions { justify-content: center; }
     .lead { margin-left: auto; margin-right: auto; }
+    .stats { grid-template-columns: 1fr; }
+    .eyebrow::before { display: none; }
   }
   @media (max-width: 620px) {
     .nav-links { gap: 16px; }
     .nav-links a { font-size: .85rem; }
-    section { padding: 68px 0; }
+    section { padding: 70px 0; }
+    .stats-band { padding-bottom: 70px; }
   }
-  @media (max-width: 420px) {
+  @media (max-width: 430px) {
     .nav-links { display: none; }
   }
 
   @media (prefers-reduced-motion: reduce) {
     html { scroll-behavior: auto; }
     .reveal { opacity: 1; transform: none; transition: none; }
+    .hero h1, .avatar-wrap, .avatar-wrap::before, .logo::before { animation: none !important; }
     * { transition-duration: .01ms !important; }
   }
 </style>
 </head>
 <body>
 
-<div class="glow" aria-hidden="true"></div>
+<!-- 背景层 -->
+<canvas id="fx" aria-hidden="true"></canvas>
+<div class="glow" aria-hidden="true"><i></i><i></i></div>
+<div class="spotlight" id="spotlight" aria-hidden="true"></div>
 
-<header class="nav">
+<!-- 滚动进度 -->
+<div class="progress" id="progress" aria-hidden="true"></div>
+
+<!-- 顶栏 -->
+<header class="nav" id="nav">
   <div class="nav-inner">
     <a href="#home" class="logo">lcd<span>-xvii</span></a>
     <nav class="nav-links">
@@ -333,12 +587,13 @@
         <div class="hero-text">
           <p class="eyebrow">你好，我是</p>
           <h1>lcd-xvii</h1>
+          <p class="type-line"><span class="txt" id="typed"></span></p>
           <p class="lead">
-            一名计算器爱好者。
+            这里放着我的项目和一些做过的东西。
           </p>
           <div class="actions">
-            <a class="btn btn-primary" href="#projects">看看我的项目</a>
-            <a class="btn" href="https://github.com/lcd-xvii" target="_blank" rel="noopener">
+            <a class="btn btn-primary magnetic" href="#projects">看看我的项目</a>
+            <a class="btn magnetic" href="https://github.com/lcd-xvii" target="_blank" rel="noopener">
               <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
                 <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38
                          0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13
@@ -370,18 +625,43 @@
 
       <div class="about-text reveal">
         <p>
-          我是 <strong>lcd-xvii</strong>，一名计算器爱好者。我乐于探索计算器系统，释放性能并开发实用软件。
+          我是 <strong>lcd-xvii</strong>，一名计算器爱好者。乐于探索计算器潜能，并为计算器社区贡献。
         </p>
         <p>
-          我乐于学习新语言等知识，并时刻关注开源社区的最新动态。
+          这个主页用来放我的开源项目和一些零散的记录。如果你对其中某个项目感兴趣，
+          欢迎在 GitHub 上提 Issue，或者直接联系我。
         </p>
       </div>
 
       <div class="tags reveal">
         <span class="tag">Rust</span>
+        <span class="tag">C/C++</span>
         <span class="tag">Python</span>
         <span class="tag">Git</span>
-        <span class="tag">Nbprime</span>
+        <span class="tag">Linux</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== 统计 ========== -->
+  <section class="stats-band" aria-label="GitHub 统计">
+    <div class="wrap">
+      <div class="stats reveal">
+        <div class="stat">
+          <span class="num" id="stat-repos">0</span>
+          <span class="lbl">公开仓库</span>
+          <span class="spark"></span>
+        </div>
+        <div class="stat">
+          <span class="num" id="stat-stars">0</span>
+          <span class="lbl">获得 Star</span>
+          <span class="spark"></span>
+        </div>
+        <div class="stat">
+          <span class="num" id="stat-followers">0</span>
+          <span class="lbl">关注者</span>
+          <span class="spark"></span>
+        </div>
       </div>
     </div>
   </section>
@@ -395,7 +675,9 @@
       </div>
 
       <div id="repo-list" class="grid">
-        <p class="fallback">正在加载项目…</p>
+        <div class="skeleton"></div>
+        <div class="skeleton"></div>
+        <div class="skeleton"></div>
       </div>
     </div>
   </section>
@@ -426,8 +708,7 @@
           </span>
         </a>
 
-        <!-- ↓↓↓ 改这里：把邮箱换成你自己的 ↓↓↓ -->
-        <a class="link-card" href="mailto:lcd-xvii@example.com">
+        <a class="link-card" href="mailto:lcd-xvii@outlook.com">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
                stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <rect x="2" y="4" width="20" height="16" rx="3"/>
@@ -448,56 +729,364 @@
   © <span id="year"></span> lcd-xvii · Built with GitHub Pages
 </footer>
 
+<button class="to-top" id="to-top" type="button" aria-label="回到顶部">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+       stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M12 19V5M5 12l7-7 7 7"/>
+  </svg>
+</button>
+
 <script>
 (function () {
   'use strict';
 
-  /* ---------------- 主题切换 ---------------- */
+  var USER = 'lcd-xvii';                                  // GitHub 用户名
+  var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var CAN_HOVER = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
   var root = document.documentElement;
-  var KEY = 'lcd-theme';
 
+  /* =========================================================
+     1. 主题切换
+     ========================================================= */
   document.getElementById('theme-toggle').addEventListener('click', function () {
     var next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
     root.setAttribute('data-theme', next);
-    try { localStorage.setItem(KEY, next); } catch (e) {}
+    try { localStorage.setItem('lcd-theme', next); } catch (e) {}
+    // 同步粒子颜色（下一帧自动读取 CSS 变量）
   });
 
-  /* ---------------- 年份 ---------------- */
   document.getElementById('year').textContent = new Date().getFullYear();
 
-  /* ---------------- 滚动出现动画 ---------------- */
-  var reveals = document.querySelectorAll('.reveal');
+  /* =========================================================
+     2. 背景粒子网络
+     ========================================================= */
+  var canvas = document.getElementById('fx');
+  var ctx = canvas.getContext('2d');
+  var W = 0, H = 0, DPR = 1;
+  var pts = [];
+  var running = true;
 
-  if (!('IntersectionObserver' in window)) {
-    reveals.forEach(function (el) { el.classList.add('in'); });
-  } else {
-    var io = new IntersectionObserver(function (entries) {
-      entries.forEach(function (en) {
-        if (en.isIntersecting) {
-          en.target.classList.add('in');
-          io.unobserve(en.target);
-        }
-      });
-    }, { rootMargin: '0px 0px -6% 0px', threshold: 0.08 });
-
-    var observe = function (scope) {
-      (scope || document).querySelectorAll('.reveal:not(.in)').forEach(function (el) {
-        io.observe(el);
-      });
-    };
-    observe(document);
+  function particleColor() {
+    return root.getAttribute('data-theme') === 'dark' ? [138, 180, 255] : [37, 99, 235];
   }
 
-  /* ---------------- 拉取 GitHub 仓库 ---------------- */
-  var USER = 'lcd-xvii';
+  function buildParticles() {
+    var target = Math.max(26, Math.min(78, Math.round((W * H) / 20000)));
+    pts = [];
+    for (var i = 0; i < target; i++) {
+      pts.push({
+        x: Math.random() * W,
+        y: Math.random() * H,
+        vx: (Math.random() - 0.5) * 0.32,
+        vy: (Math.random() - 0.5) * 0.32,
+        r: Math.random() * 1.6 + 0.7,
+        o: Math.random() * 0.35 + 0.25
+      });
+    }
+  }
 
+  function resizeCanvas() {
+    DPR = Math.min(window.devicePixelRatio || 1, 2);
+    W = window.innerWidth;
+    H = window.innerHeight;
+    canvas.width = Math.floor(W * DPR);
+    canvas.height = Math.floor(H * DPR);
+    canvas.style.width = W + 'px';
+    canvas.style.height = H + 'px';
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    buildParticles();
+  }
+
+  var LINK = 132, LINK2 = LINK * LINK;
+
+  function draw() {
+    if (!running) return;
+    ctx.clearRect(0, 0, W, H);
+    var c = particleColor();
+    var i, j, p, q, dx, dy, d2, a;
+
+    // 移动
+    for (i = 0; i < pts.length; i++) {
+      p = pts[i];
+      p.x += p.vx;
+      p.y += p.vy;
+      if (p.x < -30) p.x = W + 30; else if (p.x > W + 30) p.x = -30;
+      if (p.y < -30) p.y = H + 30; else if (p.y > H + 30) p.y = -30;
+    }
+
+    // 连线
+    ctx.lineWidth = 1;
+    for (i = 0; i < pts.length; i++) {
+      p = pts[i];
+      for (j = i + 1; j < pts.length; j++) {
+        q = pts[j];
+        dx = p.x - q.x; dy = p.y - q.y;
+        d2 = dx * dx + dy * dy;
+        if (d2 < LINK2) {
+          a = (1 - Math.sqrt(d2) / LINK) * 0.24;
+          ctx.strokeStyle = 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + a.toFixed(3) + ')';
+          ctx.beginPath();
+          ctx.moveTo(p.x, p.y);
+          ctx.lineTo(q.x, q.y);
+          ctx.stroke();
+        }
+      }
+    }
+
+    // 点
+    for (i = 0; i < pts.length; i++) {
+      p = pts[i];
+      ctx.fillStyle = 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + p.o + ')';
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, 6.2832);
+      ctx.fill();
+    }
+
+    requestAnimationFrame(draw);
+  }
+
+  resizeCanvas();
+  if (!REDUCED) {
+    requestAnimationFrame(draw);
+  } else {
+    running = false;
+  }
+
+  var rt;
+  window.addEventListener('resize', function () {
+    clearTimeout(rt);
+    rt = setTimeout(resizeCanvas, 180);
+  });
+
+  document.addEventListener('visibilitychange', function () {
+    if (document.hidden) {
+      running = false;
+    } else if (!REDUCED) {
+      running = true;
+      requestAnimationFrame(draw);
+    }
+  });
+
+  /* =========================================================
+     3. 鼠标光晕 + 磁吸 + 卡片 3D
+     ========================================================= */
+  var spot = document.getElementById('spotlight');
+  var spotX = 0, spotY = 0, curX = 0, curY = 0, spotOn = false;
+
+  if (CAN_HOVER && !REDUCED) {
+    window.addEventListener('mousemove', function (e) {
+      spotX = e.clientX;
+      spotY = e.clientY;
+      if (!spotOn) {
+        spotOn = true;
+        curX = spotX; curY = spotY;
+        spot.classList.add('on');
+        loopSpot();
+      }
+    });
+
+    window.addEventListener('mouseleave', function () {
+      spot.classList.remove('on');
+      spotOn = false;
+    });
+  }
+
+  function loopSpot() {
+    if (!spotOn) return;
+    curX += (spotX - curX) * 0.12;   // 缓动跟随
+    curY += (spotY - curY) * 0.12;
+    spot.style.transform = 'translate3d(' + curX + 'px,' + curY + 'px,0)';
+    requestAnimationFrame(loopSpot);
+  }
+
+  // 磁吸按钮
+  function bindMagnetic(el) {
+    if (!CAN_HOVER || REDUCED) return;
+    el.addEventListener('mousemove', function (e) {
+      var r = el.getBoundingClientRect();
+      var x = e.clientX - r.left - r.width / 2;
+      var y = e.clientY - r.top - r.height / 2;
+      el.style.transform = 'translate(' + (x * 0.16) + 'px,' + (y * 0.26 - 2) + 'px)';
+    });
+    el.addEventListener('mouseleave', function () {
+      el.style.transform = '';
+    });
+  }
+  document.querySelectorAll('.magnetic').forEach(bindMagnetic);
+
+  // 卡片 3D 倾斜 + 高光跟随
+  function bindTilt(card) {
+    if (!CAN_HOVER || REDUCED) return;
+    card.addEventListener('mousemove', function (e) {
+      var r = card.getBoundingClientRect();
+      var px = (e.clientX - r.left) / r.width;
+      var py = (e.clientY - r.top) / r.height;
+      card.style.setProperty('--mx', (px * 100).toFixed(1) + '%');
+      card.style.setProperty('--my', (py * 100).toFixed(1) + '%');
+      card.style.transform =
+        'perspective(760px) rotateX(' + ((0.5 - py) * 7).toFixed(2) + 'deg) ' +
+        'rotateY(' + ((px - 0.5) * 7).toFixed(2) + 'deg) translateY(-5px)';
+    });
+    card.addEventListener('mouseleave', function () {
+      card.style.transform = '';
+    });
+  }
+
+  /* =========================================================
+     4. 滚动进度 / 顶栏阴影 / 回到顶部
+     ========================================================= */
+  var progress = document.getElementById('progress');
+  var nav = document.getElementById('nav');
+  var toTop = document.getElementById('to-top');
+  var ticking = false;
+
+  function onScroll() {
+    var st = window.pageYOffset || document.documentElement.scrollTop;
+    var h = document.documentElement.scrollHeight - window.innerHeight;
+    progress.style.width = (h > 0 ? (st / h) * 100 : 0) + '%';
+    nav.classList.toggle('scrolled', st > 8);
+    toTop.classList.toggle('show', st > 500);
+    ticking = false;
+  }
+
+  window.addEventListener('scroll', function () {
+    if (!ticking) {
+      ticking = true;
+      requestAnimationFrame(onScroll);
+    }
+  }, { passive: true });
+
+  onScroll();
+
+  toTop.addEventListener('click', function () {
+    window.scrollTo({ top: 0, behavior: REDUCED ? 'auto' : 'smooth' });
+  });
+
+  /* =========================================================
+     5. 打字机
+     ========================================================= */
+  (function typewriter() {
+    var el = document.getElementById('typed');
+    var PHRASES = [
+      '热爱驱动创造，创新驱动发展。',
+      '开源精神万岁。'
+    ];
+
+    if (REDUCED) { el.textContent = PHRASES[0]; return; }
+
+    var pi = 0, ci = 0, deleting = false;
+
+    function step() {
+      var cur = PHRASES[pi];
+      if (!deleting) {
+        ci++;
+        el.textContent = cur.slice(0, ci);
+        if (ci === cur.length) {
+          deleting = true;
+          setTimeout(step, 1700);
+        } else {
+          setTimeout(step, 75 + Math.random() * 65);
+        }
+      } else {
+        ci--;
+        el.textContent = cur.slice(0, ci);
+        if (ci === 0) {
+          deleting = false;
+          pi = (pi + 1) % PHRASES.length;
+          setTimeout(step, 340);
+        } else {
+          setTimeout(step, 38);
+        }
+      }
+    }
+    setTimeout(step, 500);
+  })();
+
+  /* =========================================================
+     6. 滚动出现
+     ========================================================= */
+  var io = null;
+
+  function initReveal() {
+    if (REDUCED || !('IntersectionObserver' in window)) {
+      document.querySelectorAll('.reveal').forEach(function (el) { el.classList.add('in'); });
+      return;
+    }
+    io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) {
+        if (!en.isIntersecting) return;
+        var el = en.target;
+        el.classList.add('in');
+        io.unobserve(el);
+        // 交错延迟用完后清理，避免影响 hover 动效
+        if (el.style.transitionDelay) {
+          setTimeout(function () { el.style.transitionDelay = '0ms'; }, 900);
+        }
+      });
+    }, { rootMargin: '0px 0px -8% 0px', threshold: 0.06 });
+
+    document.querySelectorAll('.reveal').forEach(function (el) { io.observe(el); });
+  }
+
+  function observeNew(scope) {
+    if (!io) {
+      scope.querySelectorAll('.reveal').forEach(function (el) { el.classList.add('in'); });
+      return;
+    }
+    scope.querySelectorAll('.reveal:not(.in)').forEach(function (el) { io.observe(el); });
+  }
+
+  initReveal();
+
+  /* =========================================================
+     7. 数字滚动
+     ========================================================= */
+  function countUp(el, to, dur) {
+    if (REDUCED) { el.textContent = to; return; }
+    var start = performance.now();
+    function step(t) {
+      var p = Math.min((t - start) / dur, 1);
+      var e = 1 - Math.pow(1 - p, 3);
+      el.textContent = Math.round(to * e);
+      if (p < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+
+  var statsPending = null;
+  var statsDone = false;
+  var statsBox = document.querySelector('.stats');
+
+  function flushStats() {
+    if (!statsPending || statsDone) return;
+    statsDone = true;
+    countUp(document.getElementById('stat-repos'), statsPending.repos, 1200);
+    countUp(document.getElementById('stat-stars'), statsPending.stars, 1400);
+    countUp(document.getElementById('stat-followers'), statsPending.followers, 1200);
+  }
+
+  if ('IntersectionObserver' in window) {
+    var sio = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) {
+        if (en.isIntersecting) { flushStats(); sio.disconnect(); }
+      });
+    }, { threshold: 0.3 });
+    sio.observe(statsBox);
+  } else {
+    flushStats();
+  }
+
+  /* =========================================================
+     8. 拉取 GitHub 数据
+     ========================================================= */
   var LANG_COLORS = {
     JavaScript: '#f1e05a', TypeScript: '#3178c6', Python: '#3572A5',
     HTML: '#e34c26', CSS: '#563d7c', SCSS: '#c6538c', Java: '#b07219',
-    'C++': '#f34b7d', C: '#555555', 'C#': '#178600', Go: '#00ADD8',
+    'C++': '#f34b7d', C: '#8b949e', 'C#': '#178600', Go: '#00ADD8',
     Rust: '#dea584', Shell: '#89e051', Vue: '#41b883', Svelte: '#ff3e00',
     'Jupyter Notebook': '#DA5B0B', PHP: '#4F5D95', Ruby: '#701516',
-    Kotlin: '#A97BFF', Swift: '#F05138', Dart: '#00B4AB', Lua: '#000080'
+    Kotlin: '#A97BFF', Swift: '#F05138', Dart: '#00B4AB', Lua: '#5b4fc7',
+    Dockerfile: '#384d54', Makefile: '#427819'
   };
 
   function esc(s) {
@@ -508,57 +1097,68 @@
 
   var box = document.getElementById('repo-list');
 
-  fetch('https://api.github.com/users/' + USER + '/repos?sort=updated&per_page=100')
-    .then(function (res) {
-      if (!res.ok) throw new Error('HTTP ' + res.status);
-      return res.json();
-    })
-    .then(function (repos) {
-      if (!Array.isArray(repos)) throw new Error('bad response');
+  Promise.all([
+    fetch('https://api.github.com/users/' + USER + '/repos?sort=updated&per_page=100')
+      .then(function (r) { if (!r.ok) throw new Error('repos ' + r.status); return r.json(); }),
+    fetch('https://api.github.com/users/' + USER)
+      .then(function (r) { if (!r.ok) throw new Error('user ' + r.status); return r.json(); })
+  ]).then(function (res) {
+    var repos = res[0], user = res[1];
 
-      var list = repos
-        .filter(function (r) { return !r.fork && !r.archived; })
-        .slice(0, 6);
+    /* ---- 统计 ---- */
+    var stars = repos.reduce(function (n, r) { return n + (r.stargazers_count || 0); }, 0);
+    statsPending = {
+      repos: (user && typeof user.public_repos === 'number') ? user.public_repos : repos.length,
+      stars: stars,
+      followers: (user && user.followers) || 0
+    };
+    // 若统计区已经在视口内，直接播动画
+    var rect = statsBox.getBoundingClientRect();
+    if (rect.top < window.innerHeight && rect.bottom > 0) flushStats();
 
-      if (!list.length) throw new Error('no repos');
+    /* ---- 项目卡片 ---- */
+    var list = repos
+      .filter(function (r) { return !r.fork && !r.archived; })
+      .slice(0, 6);
 
-      box.innerHTML = list.map(function (r) {
-        var color = LANG_COLORS[r.language] || 'var(--accent)';
+    if (!list.length) throw new Error('no repos');
 
-        var lang = r.language
-          ? '<span class="meta-item"><i class="dot" style="--c:' + color + '"></i>' +
-            esc(r.language) + '</span>'
-          : '';
+    box.innerHTML = list.map(function (r, i) {
+      var color = LANG_COLORS[r.language] || 'var(--accent)';
 
-        var stars = r.stargazers_count > 0
-          ? '<span class="meta-item">★ ' + r.stargazers_count + '</span>'
-          : '';
+      var lang = r.language
+        ? '<span class="meta-item"><i class="dot" style="--c:' + esc(color) + '"></i>' +
+          esc(r.language) + '</span>'
+        : '';
 
-        return '<a class="card reveal" href="' + esc(r.html_url) + '" target="_blank" rel="noopener">' +
-                 '<h3><svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">' +
-                   '<path d="M2 2.5A2.5 2.5 0 0 1 4.5 0h8.75a.75.75 0 0 1 .75.75v12.5a.75.75 0 0 1-.75.75' +
-                   'h-2.5v1.5a.75.75 0 0 1-1.06.67L8 15.06l-1.69.86A.75.75 0 0 1 5.25 15.25V14.5h-.75' +
-                   'A2.5 2.5 0 0 1 2 12V2.5zm2.5-1A1 1 0 0 0 3.5 2.5V12a1 1 0 0 0 1 1h.75V7.5a.75.75 0 0 1 1.28-.53' +
-                   'L8 8.44l1.47-1.47A.75.75 0 0 1 10.75 7.5v5.5h2.75V1.5H4.5z"/></svg>' +
-                   esc(r.name) + '</h3>' +
-                 '<p class="desc">' + esc(r.description || '暂无描述') + '</p>' +
-                 '<div class="meta">' + lang + stars + '</div>' +
-               '</a>';
-      }).join('');
+      var starsHtml = r.stargazers_count > 0
+        ? '<span class="meta-item">★ ' + r.stargazers_count + '</span>'
+        : '';
 
-      // 新插入的卡片也做出现动画
-      if ('IntersectionObserver' in window && typeof io !== 'undefined') {
-        observe(box);
-      } else {
-        box.querySelectorAll('.reveal').forEach(function (el) { el.classList.add('in'); });
-      }
-    })
-    .catch(function () {
-      box.innerHTML =
-        '<p class="fallback">项目列表加载失败（可能是接口限流）。' +
-        '可以直接访问 <a href="https://github.com/' + USER + '?tab=repositories" ' +
-        'target="_blank" rel="noopener">GitHub 仓库列表</a>。</p>';
-    });
+      return '<a class="card reveal" style="transition-delay:' + (i * 70) + 'ms" ' +
+               'href="' + esc(r.html_url) + '" target="_blank" rel="noopener">' +
+               '<span class="bar" style="--c:' + esc(color) + '"></span>' +
+               '<h3><svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">' +
+                 '<path d="M2 2.5A2.5 2.5 0 0 1 4.5 0h8.75a.75.75 0 0 1 .75.75v12.5a.75.75 0 0 1-.75.75' +
+                 'h-2.5v1.5a.75.75 0 0 1-1.06.67L8 15.06l-1.69.86A.75.75 0 0 1 5.25 15.25V14.5h-.75' +
+                 'A2.5 2.5 0 0 1 2 12V2.5zm2.5-1A1 1 0 0 0 3.5 2.5V12a1 1 0 0 0 1 1h.75V7.5a.75.75 0 0 1' +
+                 '1.28-.53L8 8.44l1.47-1.47A.75.75 0 0 1 10.75 7.5v5.5h2.75V1.5H4.5z"/></svg>' +
+                 esc(r.name) + '</h3>' +
+               '<p class="desc">' + esc(r.description || '暂无描述') + '</p>' +
+               '<div class="meta">' + lang + starsHtml + '</div>' +
+             '</a>';
+    }).join('');
+
+    var cards = box.querySelectorAll('.card');
+    cards.forEach(bindTilt);
+    observeNew(box);
+  }).catch(function () {
+    box.innerHTML =
+      '<p class="fallback">项目列表加载失败（可能是接口限流）。可以直接访问 ' +
+      '<a href="https://github.com/' + USER + '?tab=repositories" target="_blank" rel="noopener">' +
+      'GitHub 仓库列表</a>。</p>';
+  });
+
 })();
 </script>
 
