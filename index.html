@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>lcd-xvii</title>
+<meta name="description" content="lcd-xvii 的个人主页：项目、技能与联系方式。">
+<meta property="og:title" content="lcd-xvii">
+<meta property="og:description" content="lcd-xvii 的个人主页">
+<meta property="og:image" content="https://github.com/lcd-xvii.png">
+<link rel="icon" href="https://github.com/lcd-xvii.png">
+
+<!-- 提前设好主题，避免刷新时闪白/闪黑 -->
+<script>
+  (function () {
+    try {
+      var s = localStorage.getItem('lcd-theme');
+      var t = s || (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+      document.documentElement.setAttribute('data-theme', t);
+    } catch (e) {}
+  })();
+</script>
+
+<style>
+  *,
+  *::before,
+  *::after { box-sizing: border-box; }
+  * { margin: 0; padding: 0; }
+
+  :root {
+    --bg: #ffffff;
+    --bg-soft: #f6f7f9;
+    --card: #ffffff;
+    --nav-bg: rgba(255, 255, 255, .75);
+    --text: #101828;
+    --text-soft: #5b6472;
+    --border: #e6e8eb;
+    --accent: #2563eb;
+    --accent-2: #7c3aed;
+    --accent-fg: #ffffff;
+    --shadow: 0 1px 2px rgba(16, 24, 40, .04), 0 12px 32px -14px rgba(16, 24, 40, .18);
+  }
+
+  html[data-theme="dark"] {
+    --bg: #0a0c10;
+    --bg-soft: #101318;
+    --card: #111419;
+    --nav-bg: rgba(10, 12, 16, .75);
+    --text: #eef1f5;
+    --text-soft: #98a2b3;
+    --border: #1f242c;
+    --accent: #8ab4ff;
+    --accent-2: #d0a2ff;
+    --accent-fg: #0a0c10;
+    --shadow: 0 1px 2px rgba(0, 0, 0, .5), 0 14px 34px -16px rgba(0, 0, 0, .8);
+  }
+
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 88px;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+                 "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+    transition: background-color .3s ease, color .3s ease;
+  }
+
+  /* 背景光晕 */
+  .glow { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+  .glow::before,
+  .glow::after {
+    content: ""; position: absolute; border-radius: 50%; filter: blur(110px);
+  }
+  .glow::before {
+    width: 480px; height: 480px; background: var(--accent);
+    opacity: .16; top: -220px; left: -160px;
+  }
+  .glow::after {
+    width: 520px; height: 520px; background: var(--accent-2);
+    opacity: .13; bottom: -260px; right: -180px;
+  }
+
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 24px; }
+
+  /* ---------- 顶栏 ---------- */
+  .nav {
+    position: sticky; top: 0; z-index: 50;
+    background: var(--nav-bg);
+    backdrop-filter: saturate(180%) blur(14px);
+    -webkit-backdrop-filter: saturate(180%) blur(14px);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-inner {
+    max-width: 1080px; margin: 0 auto; padding: 0 24px;
+    height: 64px; display: flex; align-items: center; gap: 16px;
+  }
+  .logo {
+    font-weight: 800; font-size: 1.05rem; letter-spacing: -.01em;
+    color: var(--text); text-decoration: none; margin-right: auto;
+  }
+  .logo span { color: var(--accent); }
+
+  .nav-links { display: flex; gap: 26px; }
+  .nav-links a {
+    font-size: .92rem; color: var(--text-soft);
+    text-decoration: none; transition: color .2s ease;
+  }
+  .nav-links a:hover { color: var(--accent); }
+
+  .icon-btn {
+    width: 38px; height: 38px; flex: none;
+    display: grid; place-items: center;
+    border-radius: 10px; border: 1px solid var(--border);
+    background: var(--card); color: var(--text-soft);
+    cursor: pointer;
+    transition: color .2s ease, border-color .2s ease, transform .2s ease;
+  }
+  .icon-btn:hover { color: var(--text); border-color: var(--accent); transform: translateY(-1px); }
+  .icon-btn svg { width: 19px; height: 19px; }
+  html[data-theme="dark"] .icon-moon { display: none; }
+  html[data-theme="light"] .icon-sun { display: none; }
+
+  /* ---------- 通用 section ---------- */
+  main { position: relative; z-index: 1; }
+  section { padding: 92px 0; }
+
+  .section-head { margin-bottom: 36px; }
+  .section-head h2 {
+    font-size: clamp(1.5rem, 3.2vw, 2rem);
+    letter-spacing: -.02em; line-height: 1.25;
+  }
+  .section-head p { color: var(--text-soft); margin-top: 6px; font-size: .96rem; }
+
+  /* ---------- Hero ---------- */
+  .hero { padding: 72px 0 88px; }
+  .hero-inner {
+    display: grid; grid-template-columns: 1fr auto;
+    gap: 64px; align-items: center;
+  }
+  .eyebrow { color: var(--text-soft); font-size: .95rem; margin-bottom: 10px; }
+  .hero h1 {
+    font-size: clamp(2.6rem, 7vw, 4.1rem);
+    font-weight: 800; line-height: 1.05; letter-spacing: -.035em;
+    margin-bottom: 18px;
+    background: linear-gradient(115deg, var(--text) 25%, var(--accent) 70%, var(--accent-2));
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent; color: transparent;
+  }
+  .lead {
+    color: var(--text-soft); font-size: 1.05rem;
+    max-width: 46ch; margin-bottom: 30px;
+  }
+
+  .actions { display: flex; gap: 12px; flex-wrap: wrap; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 11px 22px; border-radius: 12px;
+    border: 1px solid var(--border); background: var(--card);
+    color: var(--text); text-decoration: none;
+    font-size: .94rem; font-weight: 500;
+    box-shadow: var(--shadow);
+    transition: transform .18s ease, border-color .18s ease, background-color .18s ease;
+  }
+  .btn:hover { transform: translateY(-2px); border-color: var(--accent); }
+  .btn svg { width: 18px; height: 18px; }
+  .btn-primary {
+    background: linear-gradient(120deg, var(--accent), var(--accent-2));
+    color: var(--accent-fg); border-color: transparent;
+  }
+  .btn-primary:hover { border-color: transparent; }
+
+  .avatar-wrap {
+    padding: 9px; border-radius: 50%;
+    background: linear-gradient(140deg, var(--accent), var(--accent-2));
+    box-shadow: var(--shadow);
+  }
+  .avatar-wrap img {
+    display: block; width: 180px; height: 180px;
+    border-radius: 50%; border: 5px solid var(--bg);
+    background: var(--bg-soft); object-fit: cover;
+  }
+
+  /* ---------- 关于 ---------- */
+  .about-text { color: var(--text-soft); max-width: 68ch; }
+  .about-text p + p { margin-top: 14px; }
+  .about-text strong { color: var(--text); font-weight: 600; }
+
+  .tags { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 28px; }
+  .tag {
+    padding: 7px 14px; border-radius: 999px;
+    border: 1px solid var(--border); background: var(--card);
+    font-size: .85rem; color: var(--text-soft);
+    transition: color .2s ease, border-color .2s ease;
+  }
+  .tag:hover { color: var(--accent); border-color: var(--accent); }
+
+  /* ---------- 项目 ---------- */
+  .grid {
+    display: grid; gap: 18px;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  }
+  .card {
+    display: flex; flex-direction: column;
+    padding: 22px; border-radius: 16px;
+    border: 1px solid var(--border); background: var(--card);
+    text-decoration: none; color: inherit;
+    transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease;
+  }
+  .card:hover {
+    transform: translateY(-4px);
+    border-color: var(--accent);
+    box-shadow: var(--shadow);
+  }
+  .card h3 {
+    font-size: 1.02rem; font-weight: 600;
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 8px; word-break: break-word;
+  }
+  .card h3 svg { width: 16px; height: 16px; flex: none; color: var(--text-soft); }
+  .card .desc {
+    color: var(--text-soft); font-size: .9rem;
+    margin-bottom: 16px; flex: 1;
+  }
+  .card .meta {
+    display: flex; align-items: center; gap: 16px;
+    font-size: .82rem; color: var(--text-soft);
+  }
+  .dot {
+    width: 10px; height: 10px; border-radius: 50%;
+    display: inline-block; background: var(--c, var(--accent));
+    margin-right: -8px;
+  }
+  .meta-item { display: inline-flex; align-items: center; gap: 6px; }
+
+  .fallback { color: var(--text-soft); font-size: .95rem; }
+  .fallback a { color: var(--accent); }
+
+  /* ---------- 联系 ---------- */
+  .links {
+    display: grid; gap: 14px;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  }
+  .link-card {
+    display: flex; align-items: center; gap: 14px;
+    padding: 18px 20px; border-radius: 14px;
+    border: 1px solid var(--border); background: var(--card);
+    text-decoration: none; color: inherit;
+    transition: transform .2s ease, border-color .2s ease;
+  }
+  .link-card:hover { transform: translateY(-3px); border-color: var(--accent); }
+  .link-card svg { width: 22px; height: 22px; flex: none; color: var(--accent); }
+  .link-card .label { font-size: .8rem; color: var(--text-soft); }
+  .link-card .value { font-size: .94rem; font-weight: 500; word-break: break-all; }
+
+  /* ---------- 页脚 ---------- */
+  footer {
+    position: relative; z-index: 1;
+    border-top: 1px solid var(--border);
+    padding: 30px 24px; text-align: center;
+    color: var(--text-soft); font-size: .85rem;
+  }
+
+  /* ---------- 滚动出现 ---------- */
+  .reveal {
+    opacity: 0; transform: translateY(18px);
+    transition: opacity .6s ease, transform .6s ease;
+  }
+  .reveal.in { opacity: 1; transform: none; }
+
+  /* ---------- 响应式 ---------- */
+  @media (max-width: 820px) {
+    .hero-inner { grid-template-columns: 1fr; gap: 36px; text-align: center; justify-items: center; }
+    .avatar-wrap { order: -1; }
+    .avatar-wrap img { width: 150px; height: 150px; }
+    .actions { justify-content: center; }
+    .lead { margin-left: auto; margin-right: auto; }
+  }
+  @media (max-width: 620px) {
+    .nav-links { gap: 16px; }
+    .nav-links a { font-size: .85rem; }
+    section { padding: 68px 0; }
+  }
+  @media (max-width: 420px) {
+    .nav-links { display: none; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    .reveal { opacity: 1; transform: none; transition: none; }
+    * { transition-duration: .01ms !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="glow" aria-hidden="true"></div>
+
+<header class="nav">
+  <div class="nav-inner">
+    <a href="#home" class="logo">lcd<span>-xvii</span></a>
+    <nav class="nav-links">
+      <a href="#about">关于</a>
+      <a href="#projects">项目</a>
+      <a href="#contact">联系</a>
+    </nav>
+    <button id="theme-toggle" class="icon-btn" type="button" aria-label="切换主题">
+      <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="2" stroke-linecap="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="4"/>
+        <path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M6.3 17.7l-1.4 1.4M19.1 4.9l-1.4 1.4"/>
+      </svg>
+      <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>
+      </svg>
+    </button>
+  </div>
+</header>
+
+<main>
+
+  <!-- ========== Hero ========== -->
+  <section id="home" class="hero">
+    <div class="wrap">
+      <div class="hero-inner">
+        <div class="hero-text">
+          <p class="eyebrow">你好，我是</p>
+          <h1>lcd-xvii</h1>
+          <p class="lead">
+            一名计算器爱好者。
+          </p>
+          <div class="actions">
+            <a class="btn btn-primary" href="#projects">看看我的项目</a>
+            <a class="btn" href="https://github.com/lcd-xvii" target="_blank" rel="noopener">
+              <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+                <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38
+                         0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13
+                         -.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66
+                         .07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15
+                         -.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.4 7.4 0 0 1 2-.27c.68 0
+                         1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82
+                         1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01
+                         1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
+              </svg>
+              GitHub
+            </a>
+          </div>
+        </div>
+        <div class="avatar-wrap">
+          <img src="https://github.com/lcd-xvii.png" alt="lcd-xvii 的头像" width="180" height="180">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== 关于 ========== -->
+  <section id="about">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <h2>关于我</h2>
+        <p>简单介绍一下自己</p>
+      </div>
+
+      <div class="about-text reveal">
+        <p>
+          我是 <strong>lcd-xvii</strong>，一名计算器爱好者。我乐于探索计算器系统，释放性能并开发实用软件。
+        </p>
+        <p>
+          我乐于学习新语言等知识，并时刻关注开源社区的最新动态。
+        </p>
+      </div>
+
+      <div class="tags reveal">
+        <span class="tag">Rust</span>
+        <span class="tag">Python</span>
+        <span class="tag">Git</span>
+        <span class="tag">Nbprime</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== 项目 ========== -->
+  <section id="projects">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <h2>项目</h2>
+        <p>自动同步自 GitHub，按最近更新排序</p>
+      </div>
+
+      <div id="repo-list" class="grid">
+        <p class="fallback">正在加载项目…</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== 联系 ========== -->
+  <section id="contact">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <h2>联系我</h2>
+        <p>欢迎交流</p>
+      </div>
+
+      <div class="links reveal">
+        <a class="link-card" href="https://github.com/lcd-xvii" target="_blank" rel="noopener">
+          <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+            <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38
+                     0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13
+                     -.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66
+                     .07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15
+                     -.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.4 7.4 0 0 1 2-.27c.68 0
+                     1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82
+                     1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01
+                     1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
+          </svg>
+          <span>
+            <span class="label">GitHub</span>
+            <span class="value">@lcd-xvii</span>
+          </span>
+        </a>
+
+        <!-- ↓↓↓ 改这里：把邮箱换成你自己的 ↓↓↓ -->
+        <a class="link-card" href="mailto:lcd-xvii@example.com">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="2" y="4" width="20" height="16" rx="3"/>
+            <path d="m3 7 8.2 5.6a1.5 1.5 0 0 0 1.6 0L21 7"/>
+          </svg>
+          <span>
+            <span class="label">Email</span>
+            <span class="value">lcd-xvii@example.com</span>
+          </span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  © <span id="year"></span> lcd-xvii · Built with GitHub Pages
+</footer>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ---------------- 主题切换 ---------------- */
+  var root = document.documentElement;
+  var KEY = 'lcd-theme';
+
+  document.getElementById('theme-toggle').addEventListener('click', function () {
+    var next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    root.setAttribute('data-theme', next);
+    try { localStorage.setItem(KEY, next); } catch (e) {}
+  });
+
+  /* ---------------- 年份 ---------------- */
+  document.getElementById('year').textContent = new Date().getFullYear();
+
+  /* ---------------- 滚动出现动画 ---------------- */
+  var reveals = document.querySelectorAll('.reveal');
+
+  if (!('IntersectionObserver' in window)) {
+    reveals.forEach(function (el) { el.classList.add('in'); });
+  } else {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) {
+        if (en.isIntersecting) {
+          en.target.classList.add('in');
+          io.unobserve(en.target);
+        }
+      });
+    }, { rootMargin: '0px 0px -6% 0px', threshold: 0.08 });
+
+    var observe = function (scope) {
+      (scope || document).querySelectorAll('.reveal:not(.in)').forEach(function (el) {
+        io.observe(el);
+      });
+    };
+    observe(document);
+  }
+
+  /* ---------------- 拉取 GitHub 仓库 ---------------- */
+  var USER = 'lcd-xvii';
+
+  var LANG_COLORS = {
+    JavaScript: '#f1e05a', TypeScript: '#3178c6', Python: '#3572A5',
+    HTML: '#e34c26', CSS: '#563d7c', SCSS: '#c6538c', Java: '#b07219',
+    'C++': '#f34b7d', C: '#555555', 'C#': '#178600', Go: '#00ADD8',
+    Rust: '#dea584', Shell: '#89e051', Vue: '#41b883', Svelte: '#ff3e00',
+    'Jupyter Notebook': '#DA5B0B', PHP: '#4F5D95', Ruby: '#701516',
+    Kotlin: '#A97BFF', Swift: '#F05138', Dart: '#00B4AB', Lua: '#000080'
+  };
+
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+
+  var box = document.getElementById('repo-list');
+
+  fetch('https://api.github.com/users/' + USER + '/repos?sort=updated&per_page=100')
+    .then(function (res) {
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      return res.json();
+    })
+    .then(function (repos) {
+      if (!Array.isArray(repos)) throw new Error('bad response');
+
+      var list = repos
+        .filter(function (r) { return !r.fork && !r.archived; })
+        .slice(0, 6);
+
+      if (!list.length) throw new Error('no repos');
+
+      box.innerHTML = list.map(function (r) {
+        var color = LANG_COLORS[r.language] || 'var(--accent)';
+
+        var lang = r.language
+          ? '<span class="meta-item"><i class="dot" style="--c:' + color + '"></i>' +
+            esc(r.language) + '</span>'
+          : '';
+
+        var stars = r.stargazers_count > 0
+          ? '<span class="meta-item">★ ' + r.stargazers_count + '</span>'
+          : '';
+
+        return '<a class="card reveal" href="' + esc(r.html_url) + '" target="_blank" rel="noopener">' +
+                 '<h3><svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">' +
+                   '<path d="M2 2.5A2.5 2.5 0 0 1 4.5 0h8.75a.75.75 0 0 1 .75.75v12.5a.75.75 0 0 1-.75.75' +
+                   'h-2.5v1.5a.75.75 0 0 1-1.06.67L8 15.06l-1.69.86A.75.75 0 0 1 5.25 15.25V14.5h-.75' +
+                   'A2.5 2.5 0 0 1 2 12V2.5zm2.5-1A1 1 0 0 0 3.5 2.5V12a1 1 0 0 0 1 1h.75V7.5a.75.75 0 0 1 1.28-.53' +
+                   'L8 8.44l1.47-1.47A.75.75 0 0 1 10.75 7.5v5.5h2.75V1.5H4.5z"/></svg>' +
+                   esc(r.name) + '</h3>' +
+                 '<p class="desc">' + esc(r.description || '暂无描述') + '</p>' +
+                 '<div class="meta">' + lang + stars + '</div>' +
+               '</a>';
+      }).join('');
+
+      // 新插入的卡片也做出现动画
+      if ('IntersectionObserver' in window && typeof io !== 'undefined') {
+        observe(box);
+      } else {
+        box.querySelectorAll('.reveal').forEach(function (el) { el.classList.add('in'); });
+      }
+    })
+    .catch(function () {
+      box.innerHTML =
+        '<p class="fallback">项目列表加载失败（可能是接口限流）。' +
+        '可以直接访问 <a href="https://github.com/' + USER + '?tab=repositories" ' +
+        'target="_blank" rel="noopener">GitHub 仓库列表</a>。</p>';
+    });
+})();
+</script>
+
+</body>
+</html>
