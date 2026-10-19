@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>OI Docs</title>
 
-<!-- KaTeX（公式渲染样式） -->
+<!-- KaTeX 样式（公式渲染） -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
 <!-- 代码高亮样式 -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github-dark.min.css">
@@ -127,8 +127,8 @@
   .md img{max-width:100%; border-radius:8px}
   .md hr{border:none; border-top:1px solid var(--border); margin:2em 0}
 
-  /* KaTeX 块级公式包裹 */
-  .katex-block{display:block; overflow-x:auto; overflow-y:hidden; margin:1em 0; text-align:center}
+  /* KaTeX 块级公式 */
+  .katex-display{overflow-x:auto; overflow-y:hidden; padding:4px 0}
   .katex-error{color:#cf222e; background:#ffebe9; padding:2px 6px; border-radius:4px; font-family:monospace}
 
   .article-title{font-size:28px; margin:0 0 4px; font-weight:700}
@@ -184,9 +184,11 @@
   <main><div id="content"></div></main>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/marked@12.0.0/marked.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<!-- ===== 引擎：markdown-it + @vscode/markdown-it-katex ===== -->
+<script src="https://cdn.jsdelivr.net/npm/markdown-it@14.1.0/dist/markdown-it.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@vscode/markdown-it-katex@1.1.2/dist/index.umd.js"></script>
 <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+
 <script>
 /* ================================================================
  * ⚠️ 必改配置
@@ -195,11 +197,10 @@ const CONFIG = {
   owner:  'lcd-xvii',
   repo:   'oi-docs',
   branch: 'main',
-  contentRoot: '',
-  treeCacheTTL: 10 * 60 * 1000,     // 文件列表缓存时长（毫秒）
+  contentRoot: '',                    // 若 index.html 位于 docs/，填 'docs'
+  treeCacheTTL: 10 * 60 * 1000,
 };
 
-/* 分类显示配置（可选）：控制顺序、图标；未列出的文件夹会自动出现 */
 const CATEGORY_META = {
   '题解':     { icon: '📝', order: 1 },
   '总结':     { icon: '📋', order: 2 },
@@ -230,60 +231,25 @@ const resolvePath = (dir, rel) => {
 };
 
 /* ================================================================
- * KaTeX for marked（自定义扩展，不依赖第三方 marked 插件）
+ * 解析器：markdown-it + VS Code 同款 KaTeX 插件
+ * 不再手写任何 $ 正则，Pandoc 规则由插件保证
  * ================================================================ */
-const katexBlockExt = {
-  name: 'katexBlock',
-  level: 'inline',
-  start(src) {
-    const m = /(?<!\\)\$\$/.exec(src);
-    return m ? m.index : -1;
-  },
-  tokenizer(src) {
-    const m = /^\$\$([\s\S]+?)\$\$/.exec(src);
-    if (m) {
-      return { type: 'katexBlock', raw: m[0], text: m[1].trim() };
+const md = markdownit({
+  html: true,
+  linkify: true,
+  typographer: true,
+  highlight(str, lang) {
+    if (lang && hljs.getLanguage(lang)) {
+      try { return hljs.highlight(str, { language: lang }).value; } catch (e) {}
     }
+    return ''; // 无语言标注的代码块交给 markdown-it 默认处理
   },
-  renderer(t) {
-    try {
-      return `<div class="katex-block">${katex.renderToString(t.text, {
-        displayMode: true, throwOnError: false, output: 'htmlAndMathml'
-      })}</div>`;
-    } catch (e) {
-      return `<span class="katex-error">${escapeHtml(t.raw)}</span>`;
-    }
-  }
-};
+});
 
-const katexInlineExt = {
-  name: 'katexInline',
-  level: 'inline',
-  start(src) {
-    const m = /(?<!\\)\$/.exec(src);
-    return m ? m.index : -1;
-  },
-  tokenizer(src) {
-    if (src.startsWith('$$')) return; // 交给块级扩展
-    // $...$：开头/结尾不能空白，结尾 $ 后不能紧跟数字（避免 "$100 和 $200" 误判）
-    const m = /^\$(?!\s)([^$\n]*?[^\s$]|[^\s$])\$(?!\d)/.exec(src);
-    if (m) {
-      return { type: 'katexInline', raw: m[0], text: m[1] };
-    }
-  },
-  renderer(t) {
-    try {
-      return katex.renderToString(t.text, {
-        displayMode: false, throwOnError: false, output: 'htmlAndMathml'
-      });
-    } catch (e) {
-      return `<span class="katex-error">${escapeHtml(t.raw)}</span>`;
-    }
-  }
-};
-
-marked.use({ extensions: [katexBlockExt, katexInlineExt] });
-marked.setOptions({ gfm: true, breaks: false });
+md.use(markdownitKatex, {
+  throwOnError: false,
+  errorColor: '#cf222e',
+});
 
 /* ================================================================
  * GitHub API：一次拉取整个仓库文件树
@@ -297,19 +263,15 @@ async function fetchTree(force = false) {
   }
 
   const headers = { 'Accept': 'application/vnd.github+json' };
-  const tryBranch = async (branch) => {
-    const res = await fetch(`${API_BASE}/git/trees/${branch}?recursive=1`, { headers });
-    return res;
-  };
+  const tryBranch = async (branch) =>
+    fetch(`${API_BASE}/git/trees/${branch}?recursive=1`, { headers });
 
   let res = await tryBranch(CONFIG.branch);
-  // 分支不存在则尝试 master
-  if (res.status === 404 && CONFIG.branch === 'main') {
-    res = await tryBranch('master');
-  }
+  if (res.status === 404 && CONFIG.branch === 'main') res = await tryBranch('master');
+
   if (!res.ok) {
     if (res.status === 403 || res.status === 429) {
-      throw new Error('GitHub API 速率限制（匿名 60 次/小时）。请稍后重试，或参考下方「进阶」使用 GitHub Actions 生成 docs.json。');
+      throw new Error('GitHub API 速率限制（匿名 60 次/小时）。请稍后重试。');
     }
     throw new Error(`拉取文件列表失败：HTTP ${res.status}`);
   }
@@ -321,14 +283,13 @@ async function fetchTree(force = false) {
 }
 
 async function fetchMarkdown(relPath) {
-  const url = RAW_BASE + encodePath(ROOT + relPath);
-  const res = await fetch(url, { cache: 'no-cache' });
+  const res = await fetch(RAW_BASE + encodePath(ROOT + relPath), { cache: 'no-cache' });
   if (!res.ok) throw new Error(`HTTP ${res.status} — ${relPath}`);
   return await res.text();
 }
 
 /* ================================================================
- * 从文件树构建分类结构
+ * 构建分类
  * ================================================================ */
 let CATEGORIES = [];
 let treeLoaded = false;
@@ -337,7 +298,7 @@ function buildDocs(tree) {
   const blobs = (tree.tree || [])
     .filter(t => t.type === 'blob' && /\.md$/i.test(t.path))
     .filter(t => !t.path.split('/').some(seg => seg.startsWith('.')))
-    .filter(t => !/^_/.test(t.path.split('/').pop()))  // 下划线开头 = 隐藏
+    .filter(t => !/^_/.test(t.path.split('/').pop()))
     .filter(t => !ROOT || t.path.startsWith(ROOT))
     .map(t => ROOT ? t.path.slice(ROOT.length) : t.path);
 
@@ -350,19 +311,16 @@ function buildDocs(tree) {
     groups.get(catName).push({ path, title });
   }
 
-  const arr = [...groups.entries()].map(([name, items]) => {
-    const meta = CATEGORY_META[name] || {};
-    return {
-      name,
-      icon: meta.icon || '📁',
-      order: meta.order ?? 500,
-      items: items.sort((a, b) => a.title.localeCompare(b.title, 'zh-CN')),
-      collapsed: false,
-    };
-  });
-
-  arr.sort((a, b) => a.order - b.order || a.name.localeCompare(b.name, 'zh-CN'));
-  return arr;
+  return [...groups.entries()]
+    .map(([name, items]) => {
+      const meta = CATEGORY_META[name] || {};
+      return {
+        name, icon: meta.icon || '📁', order: meta.order ?? 500,
+        items: items.sort((a, b) => a.title.localeCompare(b.title, 'zh-CN')),
+        collapsed: false,
+      };
+    })
+    .sort((a, b) => a.order - b.order || a.name.localeCompare(b.name, 'zh-CN'));
 }
 
 /* ================================================================
@@ -375,8 +333,7 @@ function renderSidebar(keyword = '') {
 
   CATEGORIES.forEach((cat, ci) => {
     const items = q
-      ? cat.items.filter(it =>
-          it.title.toLowerCase().includes(q) || cat.name.toLowerCase().includes(q))
+      ? cat.items.filter(it => it.title.toLowerCase().includes(q) || cat.name.toLowerCase().includes(q))
       : cat.items;
     if (q && items.length === 0) return;
 
@@ -389,9 +346,8 @@ function renderSidebar(keyword = '') {
       </div>
       <ul class="nav-items">`;
 
-    if (items.length === 0) {
-      html += `<li class="nav-empty">空</li>`;
-    } else {
+    if (items.length === 0) html += `<li class="nav-empty">空</li>`;
+    else {
       for (const it of items) {
         const active = it.path === current ? ' active' : '';
         html += `<li><a href="#${escapeHtml(encodeURIComponent(it.path))}"
@@ -402,9 +358,7 @@ function renderSidebar(keyword = '') {
     html += `</ul></div>`;
   });
 
-  if (!html) {
-    html = `<div class="nav-empty">${treeLoaded ? '没有找到 .md 文档' : '正在读取仓库…'}</div>`;
-  }
+  if (!html) html = `<div class="nav-empty">${treeLoaded ? '没有找到 .md 文档' : '正在读取仓库…'}</div>`;
   $('#nav').innerHTML = html;
 }
 
@@ -479,11 +433,8 @@ function fixLinks(root, mdPath) {
   root.querySelectorAll('a[href]').forEach(a => {
     let href = a.getAttribute('href');
     if (!href) return;
-
     if (/^[a-z][a-z0-9+.-]*:/i.test(href) || href.startsWith('//')) {
-      a.target = '_blank';
-      a.rel = 'noopener noreferrer';
-      return;
+      a.target = '_blank'; a.rel = 'noopener noreferrer'; return;
     }
     if (href.startsWith('#')) return;
 
@@ -500,8 +451,7 @@ function fixLinks(root, mdPath) {
         a.target = '_blank';
       }
     } else {
-      a.setAttribute('href',
-        RAW_BASE + encodePath(ROOT + resolvePath(dir, rawPath)) + (anchor ? '#' + anchor : ''));
+      a.setAttribute('href', RAW_BASE + encodePath(ROOT + resolvePath(dir, rawPath)) + (anchor ? '#' + anchor : ''));
       a.target = '_blank';
     }
   });
@@ -531,17 +481,14 @@ async function openDoc(path, anchor) {
   document.querySelectorAll('.nav-items a').forEach(a =>
     a.classList.toggle('active', a.dataset.path === path));
 
-  if (!item) {
-    showError(`未找到文档：<code>${escapeHtml(path)}</code>`);
-    return;
-  }
+  if (!item) { showError(`未找到文档：<code>${escapeHtml(path)}</code>`); return; }
 
   $('#content').innerHTML = `<div class="article"><div class="loading">正在加载 ${escapeHtml(item.title)}…</div></div>`;
   window.scrollTo(0, 0);
 
   try {
     const text = await fetchMarkdown(path);
-    const html = marked.parse(text);
+    const html = md.render(text);
 
     $('#content').innerHTML = `
       <div class="article">
@@ -553,16 +500,14 @@ async function openDoc(path, anchor) {
         <div class="md">${html}</div>
       </div>`;
 
-    const md = $('#content .md');
-    fixLinks(md, path);
-    addHeadingIds(md);
-    md.querySelectorAll('pre code').forEach(el => hljs.highlightElement(el));
+    const mdRoot = $('#content .md');
+    fixLinks(mdRoot, path);
+    addHeadingIds(mdRoot);
 
     document.title = `${item.title} · OI Docs`;
 
     if (anchor) {
-      const el = document.getElementById(anchor) ||
-                 md.querySelector(`[id="${CSS.escape(anchor)}"]`);
+      const el = document.getElementById(anchor) || mdRoot.querySelector(`[id="${CSS.escape(anchor)}"]`);
       if (el) setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
     }
   } catch (err) {
