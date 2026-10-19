@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>OI Docs</title>
 
+<!-- KaTeX 样式（公式渲染） -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
 <!-- 代码高亮样式 -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github-dark.min.css">
 
@@ -125,9 +127,9 @@
   .md img{max-width:100%; border-radius:8px}
   .md hr{border:none; border-top:1px solid var(--border); margin:2em 0}
 
-  /* MathJax 输出微调 */
-  .md .MathJax{overflow-x:auto; overflow-y:hidden; max-width:100%}
-  .md mjx-container[display="true"]{margin:1em 0 !important; overflow-x:auto; overflow-y:hidden}
+  /* KaTeX 块级公式 */
+  .katex-display{overflow-x:auto; overflow-y:hidden; padding:4px 0}
+  .katex-error{color:#cf222e; background:#ffebe9; padding:2px 6px; border-radius:4px; font-family:monospace}
 
   .article-title{font-size:28px; margin:0 0 4px; font-weight:700}
   .article-meta{
@@ -182,37 +184,23 @@
   <main><div id="content"></div></main>
 </div>
 
+<!-- ===== 引擎：markdown-it + @vscode/markdown-it-katex ===== -->
+<script src="https://cdn.jsdelivr.net/npm/markdown-it@14.1.0/dist/markdown-it.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@vscode/markdown-it-katex@1.1.2/dist/index.umd.js"></script>
 <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
 
-<script type="module">
-/* ================================================================
- * 成熟 Markdown 引擎（通过 ESM 从 esm.sh 加载）
- * ================================================================ */
-import markdownit from 'https://esm.sh/markdown-it@14.1.0';
-import mathjax3 from 'https://esm.sh/markdown-it-mathjax3@4.3.2';
-
-const md = markdownit({
-  html: true,
-  linkify: true,
-  typographer: true,
-});
-
-// MathJax 3：完整 LaTeX 支持，解析规则与 Pandoc 对齐
-// $20,000 和 $30,000 不会被误判为公式
-md.use(mathjax3);
-
+<script>
 /* ================================================================
  * ⚠️ 必改配置
  * ================================================================ */
 const CONFIG = {
-  owner:  'lcd-xvii',               // ← 你的 GitHub 用户名
-  repo:   'oi-docs',                // ← 你的仓库名
-  branch: 'main',                   // ← 通常 'main' 或 'master'
-  contentRoot: '',                  // ← 若 index.html 位于 docs/ 里，填 'docs'
+  owner:  'lcd-xvii',
+  repo:   'oi-docs',
+  branch: 'main',
+  contentRoot: '',                    // 若 index.html 位于 docs/，填 'docs'
   treeCacheTTL: 10 * 60 * 1000,
 };
 
-/* 分类显示配置（可选）：控制顺序、图标；未列出的文件夹会自动出现 */
 const CATEGORY_META = {
   '题解':     { icon: '📝', order: 1 },
   '总结':     { icon: '📋', order: 2 },
@@ -243,6 +231,27 @@ const resolvePath = (dir, rel) => {
 };
 
 /* ================================================================
+ * 解析器：markdown-it + VS Code 同款 KaTeX 插件
+ * 不再手写任何 $ 正则，Pandoc 规则由插件保证
+ * ================================================================ */
+const md = markdownit({
+  html: true,
+  linkify: true,
+  typographer: true,
+  highlight(str, lang) {
+    if (lang && hljs.getLanguage(lang)) {
+      try { return hljs.highlight(str, { language: lang }).value; } catch (e) {}
+    }
+    return ''; // 无语言标注的代码块交给 markdown-it 默认处理
+  },
+});
+
+md.use(markdownitKatex, {
+  throwOnError: false,
+  errorColor: '#cf222e',
+});
+
+/* ================================================================
  * GitHub API：一次拉取整个仓库文件树
  * ================================================================ */
 async function fetchTree(force = false) {
@@ -254,15 +263,12 @@ async function fetchTree(force = false) {
   }
 
   const headers = { 'Accept': 'application/vnd.github+json' };
-  const tryBranch = async (branch) => {
-    const res = await fetch(`${API_BASE}/git/trees/${branch}?recursive=1`, { headers });
-    return res;
-  };
+  const tryBranch = async (branch) =>
+    fetch(`${API_BASE}/git/trees/${branch}?recursive=1`, { headers });
 
   let res = await tryBranch(CONFIG.branch);
-  if (res.status === 404 && CONFIG.branch === 'main') {
-    res = await tryBranch('master');
-  }
+  if (res.status === 404 && CONFIG.branch === 'main') res = await tryBranch('master');
+
   if (!res.ok) {
     if (res.status === 403 || res.status === 429) {
       throw new Error('GitHub API 速率限制（匿名 60 次/小时）。请稍后重试。');
@@ -277,14 +283,13 @@ async function fetchTree(force = false) {
 }
 
 async function fetchMarkdown(relPath) {
-  const url = RAW_BASE + encodePath(ROOT + relPath);
-  const res = await fetch(url, { cache: 'no-cache' });
+  const res = await fetch(RAW_BASE + encodePath(ROOT + relPath), { cache: 'no-cache' });
   if (!res.ok) throw new Error(`HTTP ${res.status} — ${relPath}`);
   return await res.text();
 }
 
 /* ================================================================
- * 从文件树构建分类结构
+ * 构建分类
  * ================================================================ */
 let CATEGORIES = [];
 let treeLoaded = false;
@@ -306,19 +311,16 @@ function buildDocs(tree) {
     groups.get(catName).push({ path, title });
   }
 
-  const arr = [...groups.entries()].map(([name, items]) => {
-    const meta = CATEGORY_META[name] || {};
-    return {
-      name,
-      icon: meta.icon || '📁',
-      order: meta.order ?? 500,
-      items: items.sort((a, b) => a.title.localeCompare(b.title, 'zh-CN')),
-      collapsed: false,
-    };
-  });
-
-  arr.sort((a, b) => a.order - b.order || a.name.localeCompare(b.name, 'zh-CN'));
-  return arr;
+  return [...groups.entries()]
+    .map(([name, items]) => {
+      const meta = CATEGORY_META[name] || {};
+      return {
+        name, icon: meta.icon || '📁', order: meta.order ?? 500,
+        items: items.sort((a, b) => a.title.localeCompare(b.title, 'zh-CN')),
+        collapsed: false,
+      };
+    })
+    .sort((a, b) => a.order - b.order || a.name.localeCompare(b.name, 'zh-CN'));
 }
 
 /* ================================================================
@@ -331,8 +333,7 @@ function renderSidebar(keyword = '') {
 
   CATEGORIES.forEach((cat, ci) => {
     const items = q
-      ? cat.items.filter(it =>
-          it.title.toLowerCase().includes(q) || cat.name.toLowerCase().includes(q))
+      ? cat.items.filter(it => it.title.toLowerCase().includes(q) || cat.name.toLowerCase().includes(q))
       : cat.items;
     if (q && items.length === 0) return;
 
@@ -345,9 +346,8 @@ function renderSidebar(keyword = '') {
       </div>
       <ul class="nav-items">`;
 
-    if (items.length === 0) {
-      html += `<li class="nav-empty">空</li>`;
-    } else {
+    if (items.length === 0) html += `<li class="nav-empty">空</li>`;
+    else {
       for (const it of items) {
         const active = it.path === current ? ' active' : '';
         html += `<li><a href="#${escapeHtml(encodeURIComponent(it.path))}"
@@ -358,9 +358,7 @@ function renderSidebar(keyword = '') {
     html += `</ul></div>`;
   });
 
-  if (!html) {
-    html = `<div class="nav-empty">${treeLoaded ? '没有找到 .md 文档' : '正在读取仓库…'}</div>`;
-  }
+  if (!html) html = `<div class="nav-empty">${treeLoaded ? '没有找到 .md 文档' : '正在读取仓库…'}</div>`;
   $('#nav').innerHTML = html;
 }
 
@@ -435,11 +433,8 @@ function fixLinks(root, mdPath) {
   root.querySelectorAll('a[href]').forEach(a => {
     let href = a.getAttribute('href');
     if (!href) return;
-
     if (/^[a-z][a-z0-9+.-]*:/i.test(href) || href.startsWith('//')) {
-      a.target = '_blank';
-      a.rel = 'noopener noreferrer';
-      return;
+      a.target = '_blank'; a.rel = 'noopener noreferrer'; return;
     }
     if (href.startsWith('#')) return;
 
@@ -456,8 +451,7 @@ function fixLinks(root, mdPath) {
         a.target = '_blank';
       }
     } else {
-      a.setAttribute('href',
-        RAW_BASE + encodePath(ROOT + resolvePath(dir, rawPath)) + (anchor ? '#' + anchor : ''));
+      a.setAttribute('href', RAW_BASE + encodePath(ROOT + resolvePath(dir, rawPath)) + (anchor ? '#' + anchor : ''));
       a.target = '_blank';
     }
   });
@@ -487,10 +481,7 @@ async function openDoc(path, anchor) {
   document.querySelectorAll('.nav-items a').forEach(a =>
     a.classList.toggle('active', a.dataset.path === path));
 
-  if (!item) {
-    showError(`未找到文档：<code>${escapeHtml(path)}</code>`);
-    return;
-  }
+  if (!item) { showError(`未找到文档：<code>${escapeHtml(path)}</code>`); return; }
 
   $('#content').innerHTML = `<div class="article"><div class="loading">正在加载 ${escapeHtml(item.title)}…</div></div>`;
   window.scrollTo(0, 0);
@@ -512,13 +503,11 @@ async function openDoc(path, anchor) {
     const mdRoot = $('#content .md');
     fixLinks(mdRoot, path);
     addHeadingIds(mdRoot);
-    mdRoot.querySelectorAll('pre code').forEach(el => hljs.highlightElement(el));
 
     document.title = `${item.title} · OI Docs`;
 
     if (anchor) {
-      const el = document.getElementById(anchor) ||
-                 mdRoot.querySelector(`[id="${CSS.escape(anchor)}"]`);
+      const el = document.getElementById(anchor) || mdRoot.querySelector(`[id="${CSS.escape(anchor)}"]`);
       if (el) setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
     }
   } catch (err) {
