@@ -5,174 +5,81 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>OI Docs</title>
 
-<!-- KaTeX 样式（公式渲染） -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
-<!-- 代码高亮样式 -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github-dark.min.css">
 
 <style>
-  :root{
-    --bg:#fff; --bg-soft:#f6f8fa; --text:#1f2328; --text-soft:#59636e;
-    --border:#d1d9e0; --accent:#0969da; --accent-soft:#ddf4ff;
-    --code-bg:#f6f8fa; --sidebar-w:280px;
-  }
-  [data-theme="dark"]{
-    --bg:#0d1117; --bg-soft:#161b22; --text:#e6edf3; --text-soft:#9198a1;
-    --border:#30363d; --accent:#4493f8; --accent-soft:#121d2f;
-    --code-bg:#161b22;
-  }
-  *{box-sizing:border-box}
-  html,body{margin:0;padding:0}
-  body{
-    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;
-    background:var(--bg); color:var(--text); line-height:1.7; font-size:16px;
-  }
-  a{color:var(--accent); text-decoration:none}
-  a:hover{text-decoration:underline}
-
-  header{
-    position:sticky; top:0; z-index:50; height:56px;
-    display:flex; align-items:center; gap:12px; padding:0 16px;
-    background:var(--bg); border-bottom:1px solid var(--border);
-  }
-  .brand{font-weight:700; font-size:18px; display:flex; align-items:center; gap:8px}
-  .brand .logo{
-    width:26px; height:26px; border-radius:7px;
-    background:linear-gradient(135deg,#0969da,#8250df);
-    display:grid; place-items:center; color:#fff; font-size:13px; font-weight:700;
-  }
-  .spacer{flex:1}
-  .btn{
-    border:1px solid var(--border); background:var(--bg-soft); color:var(--text);
-    padding:6px 12px; border-radius:8px; font-size:14px; cursor:pointer; transition:.15s;
-  }
-  .btn:hover{background:var(--border)}
-  .menu-btn{display:none}
-
-  .layout{display:flex; min-height:calc(100vh - 56px)}
-  aside{
-    width:var(--sidebar-w); flex-shrink:0; border-right:1px solid var(--border);
-    background:var(--bg-soft); padding:16px 12px 40px;
-    position:sticky; top:56px; height:calc(100vh - 56px); overflow-y:auto;
-  }
-  .search{
-    width:100%; padding:8px 12px; border:1px solid var(--border); border-radius:8px;
-    background:var(--bg); color:var(--text); font-size:14px; margin-bottom:12px; outline:none;
-  }
+  :root{--bg:#fff;--bg-soft:#f6f8fa;--text:#1f2328;--text-soft:#59636e;--border:#d1d9e0;--accent:#0969da;--accent-soft:#ddf4ff;--code-bg:#f6f8fa;--sidebar-w:280px}
+  [data-theme="dark"]{--bg:#0d1117;--bg-soft:#161b22;--text:#e6edf3;--text-soft:#9198a1;--border:#30363d;--accent:#4493f8;--accent-soft:#121d2f;--code-bg:#161b22}
+  *{box-sizing:border-box}html,body{margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);line-height:1.7;font-size:16px}
+  a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+  header{position:sticky;top:0;z-index:50;height:56px;display:flex;align-items:center;gap:12px;padding:0 16px;background:var(--bg);border-bottom:1px solid var(--border)}
+  .brand{font-weight:700;font-size:18px;display:flex;align-items:center;gap:8px}
+  .brand .logo{width:26px;height:26px;border-radius:7px;background:linear-gradient(135deg,#0969da,#8250df);display:grid;place-items:center;color:#fff;font-size:13px;font-weight:700}
+  .spacer{flex:1}.btn{border:1px solid var(--border);background:var(--bg-soft);color:var(--text);padding:6px 12px;border-radius:8px;font-size:14px;cursor:pointer;transition:.15s}
+  .btn:hover{background:var(--border)}.btn:disabled{opacity:.5;cursor:not-allowed}.menu-btn{display:none}
+  .layout{display:flex;min-height:calc(100vh - 56px)}
+  aside{width:var(--sidebar-w);flex-shrink:0;border-right:1px solid var(--border);background:var(--bg-soft);padding:16px 12px 40px;position:sticky;top:56px;height:calc(100vh - 56px);overflow-y:auto}
+  .search{width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font-size:14px;margin-bottom:12px;outline:none}
   .search:focus{border-color:var(--accent)}
-
   .nav-group{margin-bottom:6px}
-  .nav-group-title{
-    display:flex; align-items:center; gap:6px; padding:8px 10px;
-    font-size:13px; font-weight:700; color:var(--text-soft);
-    cursor:pointer; user-select:none; border-radius:8px;
-  }
+  .nav-group-title{display:flex;align-items:center;gap:6px;padding:8px 10px;font-size:13px;font-weight:700;color:var(--text-soft);cursor:pointer;user-select:none;border-radius:8px}
   .nav-group-title:hover{background:var(--border)}
-  .nav-group-title .caret{display:inline-block; transition:transform .2s; font-size:10px}
+  .nav-group-title .caret{display:inline-block;transition:transform .2s;font-size:10px}
   .nav-group.collapsed .caret{transform:rotate(-90deg)}
   .nav-group.collapsed .nav-items{display:none}
-  .nav-group-title .count{
-    margin-left:auto; font-size:11px; background:var(--border); color:var(--text-soft);
-    padding:1px 7px; border-radius:999px;
-  }
-  .nav-items{list-style:none; margin:0; padding:0 0 0 6px}
-  .nav-items li a{
-    display:block; padding:6px 10px; border-radius:7px; font-size:14px; color:var(--text);
-    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-  }
-  .nav-items li a:hover{background:var(--border); text-decoration:none}
-  .nav-items li a.active{background:var(--accent-soft); color:var(--accent); font-weight:600}
-  .nav-empty{padding:6px 10px; font-size:13px; color:var(--text-soft)}
-
-  main{flex:1; min-width:0; padding:32px 40px 80px}
-  .article{max-width:860px; margin:0 auto}
-
-  .hero{text-align:center; padding:48px 0 24px}
-  .hero h1{font-size:40px; margin:0 0 12px}
-  .hero p{color:var(--text-soft); font-size:16px; margin:0 0 32px}
-  .card-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:16px; margin-top:24px}
-  .card{
-    border:1px solid var(--border); border-radius:12px; padding:20px;
-    background:var(--bg-soft); text-align:left; transition:.2s; cursor:pointer;
-  }
-  .card:hover{transform:translateY(-2px); border-color:var(--accent)}
-  .card .card-icon{font-size:24px}
-  .card h3{margin:10px 0 6px; font-size:17px}
-  .card p{margin:0; font-size:14px; color:var(--text-soft)}
-
-  .md h1,.md h2,.md h3,.md h4{line-height:1.3; margin-top:1.6em; margin-bottom:.6em}
-  .md h1{font-size:2em; border-bottom:1px solid var(--border); padding-bottom:.3em}
-  .md h2{font-size:1.5em; border-bottom:1px solid var(--border); padding-bottom:.3em}
-  .md h3{font-size:1.25em}
-  .md p{margin:0 0 1em}
-  .md ul,.md ol{padding-left:1.6em; margin:0 0 1em}
-  .md li{margin:.25em 0}
-  .md blockquote{
-    margin:0 0 1em; padding:.5em 1em; border-left:4px solid var(--border);
-    color:var(--text-soft); background:var(--bg-soft); border-radius:0 8px 8px 0;
-  }
-  .md code{
-    background:var(--code-bg); padding:.15em .4em; border-radius:5px; font-size:.9em;
-    font-family:"JetBrains Mono","Fira Code",Consolas,Menlo,monospace;
-  }
-  .md pre{
-    background:#0d1117; color:#e6edf3; padding:14px 16px; border-radius:10px;
-    overflow-x:auto; margin:0 0 1em; border:1px solid var(--border);
-  }
-  .md pre code{background:transparent; padding:0; color:inherit; font-size:14px; line-height:1.6}
-  .md pre code.hljs{background:transparent; padding:0}
-  .md table{border-collapse:collapse; width:100%; margin:0 0 1em; font-size:14px}
-  .md th,.md td{border:1px solid var(--border); padding:6px 12px; text-align:left}
-  .md th{background:var(--bg-soft)}
-  .md img{max-width:100%; border-radius:8px}
-  .md hr{border:none; border-top:1px solid var(--border); margin:2em 0}
-
-  /* KaTeX 块级公式 */
-  .katex-display{overflow-x:auto; overflow-y:hidden; padding:4px 0}
-  .katex-error{color:#cf222e; background:#ffebe9; padding:2px 6px; border-radius:4px; font-family:monospace}
-
-  .article-title{font-size:28px; margin:0 0 4px; font-weight:700}
-  .article-meta{
-    font-size:13px; color:var(--text-soft); margin-bottom:24px;
-    display:flex; gap:12px; align-items:center; flex-wrap:wrap;
-  }
-  .badge{background:var(--accent-soft); color:var(--accent); padding:2px 10px; border-radius:999px; font-size:12px; font-weight:600}
-  .loading{color:var(--text-soft); padding:60px 0; text-align:center}
-  .loading::before{content:""; display:inline-block; width:14px; height:14px; margin-right:8px;
-    border:2px solid var(--border); border-top-color:var(--accent); border-radius:50%;
-    vertical-align:-2px; animation:spin .8s linear infinite}
+  .nav-group-title .count{margin-left:auto;font-size:11px;background:var(--border);color:var(--text-soft);padding:1px 7px;border-radius:999px}
+  .nav-items{list-style:none;margin:0;padding:0 0 0 6px}
+  .nav-items li a{display:block;padding:6px 10px;border-radius:7px;font-size:14px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .nav-items li a:hover{background:var(--border);text-decoration:none}
+  .nav-items li a.active{background:var(--accent-soft);color:var(--accent);font-weight:600}
+  .nav-empty{padding:6px 10px;font-size:13px;color:var(--text-soft)}
+  main{flex:1;min-width:0;padding:32px 40px 80px}.article{max-width:860px;margin:0 auto}
+  .hero{text-align:center;padding:48px 0 24px}.hero h1{font-size:40px;margin:0 0 12px}
+  .hero p{color:var(--text-soft);font-size:16px;margin:0 0 32px}
+  .card-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-top:24px}
+  .card{border:1px solid var(--border);border-radius:12px;padding:20px;background:var(--bg-soft);text-align:left;transition:.2s;cursor:pointer}
+  .card:hover{transform:translateY(-2px);border-color:var(--accent)}
+  .card .card-icon{font-size:24px}.card h3{margin:10px 0 6px;font-size:17px}
+  .card p{margin:0;font-size:14px;color:var(--text-soft)}
+  .md h1,.md h2,.md h3,.md h4{line-height:1.3;margin-top:1.6em;margin-bottom:.6em}
+  .md h1{font-size:2em;border-bottom:1px solid var(--border);padding-bottom:.3em}
+  .md h2{font-size:1.5em;border-bottom:1px solid var(--border);padding-bottom:.3em}
+  .md h3{font-size:1.25em}.md p{margin:0 0 1em}
+  .md ul,.md ol{padding-left:1.6em;margin:0 0 1em}.md li{margin:.25em 0}
+  .md blockquote{margin:0 0 1em;padding:.5em 1em;border-left:4px solid var(--border);color:var(--text-soft);background:var(--bg-soft);border-radius:0 8px 8px 0}
+  .md code{background:var(--code-bg);padding:.15em .4em;border-radius:5px;font-size:.9em;font-family:"JetBrains Mono","Fira Code",Consolas,Menlo,monospace}
+  .md pre{background:#0d1117;color:#e6edf3;padding:14px 16px;border-radius:10px;overflow-x:auto;margin:0 0 1em;border:1px solid var(--border)}
+  .md pre code{background:transparent;padding:0;color:inherit;font-size:14px;line-height:1.6}
+  .md pre code.hljs{background:transparent;padding:0}
+  .md table{border-collapse:collapse;width:100%;margin:0 0 1em;font-size:14px}
+  .md th,.md td{border:1px solid var(--border);padding:6px 12px;text-align:left}
+  .md th{background:var(--bg-soft)}.md img{max-width:100%;border-radius:8px}
+  .md hr{border:none;border-top:1px solid var(--border);margin:2em 0}
+  .md .katex-display{overflow-x:auto;overflow-y:hidden;margin:1em 0;text-align:center}
+  .article-title{font-size:28px;margin:0 0 4px;font-weight:700}
+  .article-meta{font-size:13px;color:var(--text-soft);margin-bottom:24px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+  .badge{background:var(--accent-soft);color:var(--accent);padding:2px 10px;border-radius:999px;font-size:12px;font-weight:600}
+  .loading{color:var(--text-soft);padding:60px 0;text-align:center}
+  .loading::before{content:"";display:inline-block;width:14px;height:14px;margin-right:8px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;vertical-align:-2px;animation:spin .8s linear infinite}
   @keyframes spin{to{transform:rotate(360deg)}}
-  .error{
-    color:#cf222e; background:#ffebe9; border:1px solid #ff8182;
-    padding:16px; border-radius:10px; margin:20px 0; font-size:14px; line-height:1.8;
-  }
-  .error code{background:rgba(0,0,0,.06); padding:1px 6px; border-radius:4px}
-  [data-theme="dark"] .error{background:#3d1d1f; color:#ff8182; border-color:#6b2b2f}
+  .error{color:#cf222e;background:#ffebe9;border:1px solid #ff8182;padding:16px;border-radius:10px;margin:20px 0;font-size:14px;line-height:1.8}
+  .error code{background:rgba(0,0,0,.06);padding:1px 6px;border-radius:4px}
+  [data-theme="dark"] .error{background:#3d1d1f;color:#ff8182;border-color:#6b2b2f}
   [data-theme="dark"] .error code{background:rgba(255,255,255,.08)}
-
-  .backdrop{display:none; position:fixed; inset:56px 0 0 0; background:rgba(0,0,0,.4); z-index:40}
-  @media (max-width:860px){
-    .menu-btn{display:inline-block}
-    aside{
-      position:fixed; top:56px; left:0; bottom:0; z-index:45;
-      transform:translateX(-100%); transition:transform .25s ease;
-      height:calc(100vh - 56px); box-shadow:0 0 24px rgba(0,0,0,.15);
-    }
-    aside.open{transform:translateX(0)}
-    .backdrop.show{display:block}
-    main{padding:24px 20px 60px}
-    .hero h1{font-size:30px}
-  }
+  .backdrop{display:none;position:fixed;inset:56px 0 0 0;background:rgba(0,0,0,.4);z-index:40}
+  @media (max-width:860px){.menu-btn{display:inline-block}aside{position:fixed;top:56px;left:0;bottom:0;z-index:45;transform:translateX(-100%);transition:transform .25s ease;height:calc(100vh - 56px);box-shadow:0 0 24px rgba(0,0,0,.15)}aside.open{transform:translateX(0)}.backdrop.show{display:block}main{padding:24px 20px 60px}.hero h1{font-size:30px}}
 </style>
 </head>
 <body>
 
 <header>
-  <button class="btn menu-btn" id="menuBtn" aria-label="菜单">☰</button>
+  <button class="btn menu-btn" id="menuBtn">☰</button>
   <div class="brand"><span class="logo">OI</span> OI Docs</div>
   <div class="spacer"></div>
-  <button class="btn" id="refreshBtn" title="重新拉取文件列表">⟳ 同步</button>
-  <button class="btn" id="themeBtn" title="切换主题">🌓</button>
+  <button class="btn" id="refreshBtn" title="同步">⟳ 同步</button>
+  <button class="btn" id="themeBtn" title="主题">🌓</button>
 </header>
 
 <div class="layout">
@@ -184,20 +91,22 @@
   <main><div id="content"></div></main>
 </div>
 
-<!-- ===== 引擎：markdown-it + @vscode/markdown-it-katex ===== -->
-<script src="https://cdn.jsdelivr.net/npm/markdown-it@14.1.0/dist/markdown-it.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/markdown-it-katex@2.0.3/index.min.js"></script>
-<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
-
-<script>
+<script type="module">
 /* ================================================================
- * ⚠️ 必改配置
+ * 1. 稳定 ESM 导入
+ * ================================================================ */
+import markdownit from 'https://esm.sh/markdown-it@14.1.0';
+import markdownItKatex from 'https://esm.sh/@vscode/markdown-it-katex@1.1.2';
+import hljs from 'https://esm.sh/highlight.js@11.9.0';
+
+/* ================================================================
+ * 2. ⚠️ 必改配置
  * ================================================================ */
 const CONFIG = {
-  owner:  'lcd-xvii',
-  repo:   'oi-docs',
-  branch: 'main',
-  contentRoot: '',                    // 若 index.html 位于 docs/，填 'docs'
+  owner:  'lcd-xvii',   // ← 改成你的 GitHub 用户名
+  repo:   'oi-docs',         // ← 改成你的仓库名
+  branch: 'main',                   // ← 通常 'main' 或 'master'
+  contentRoot: '',                  // ← 若 index.html 在 docs/ 里，填 'docs'
   treeCacheTTL: 10 * 60 * 1000,
 };
 
@@ -209,50 +118,40 @@ const CATEGORY_META = {
 };
 
 /* ================================================================
- * 基础设施
+ * 3. Markdown 引擎
+ * ================================================================ */
+const md = markdownit({
+  html: true,
+  linkify: true,
+  typographer: true,
+  breaks: false,
+  highlight: function (str, lang) {
+    if (lang && hljs.getLanguage(lang)) {
+      try {
+        return '<pre class="hljs"><code>' +
+          hljs.highlight(str, { language: lang, ignoreIllegals: true }).value +
+          '</code></pre>';
+      } catch (__) {}
+    }
+    return '<pre class="hljs"><code>' + md.utils.escapeHtml(str) + '</code></pre>';
+  }
+});
+md.use(markdownItKatex, { throwOnError: false, errorColor: '#cf222e' });
+
+/* ================================================================
+ * 4. 基础设施
  * ================================================================ */
 const $ = s => document.querySelector(s);
 const ROOT = CONFIG.contentRoot ? CONFIG.contentRoot.replace(/^\/+|\/+$/g, '') + '/' : '';
 const RAW_BASE = `https://raw.githubusercontent.com/${CONFIG.owner}/${CONFIG.repo}/${CONFIG.branch}/`;
 const API_BASE = `https://api.github.com/repos/${CONFIG.owner}/${CONFIG.repo}`;
 const CACHE_KEY = `oi-docs-tree:${CONFIG.owner}/${CONFIG.repo}/${CONFIG.branch}/${ROOT}`;
-
-const escapeHtml = s => String(s).replace(/[&<>"']/g, c => (
-  {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]
-));
+const escapeHtml = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const encodePath = p => p.split('/').map(encodeURIComponent).join('/');
-const resolvePath = (dir, rel) => {
-  const out = [];
-  (dir + rel).split('/').forEach(p => {
-    if (!p || p === '.') return;
-    if (p === '..') out.pop(); else out.push(p);
-  });
-  return out.join('/');
-};
+const resolvePath = (dir, rel) => { const out=[]; (dir+rel).split('/').forEach(p=>{if(!p||p==='.')return;if(p==='..')out.pop();else out.push(p);}); return out.join('/'); };
 
 /* ================================================================
- * 解析器：markdown-it + VS Code 同款 KaTeX 插件
- * 不再手写任何 $ 正则，Pandoc 规则由插件保证
- * ================================================================ */
-const md = markdownit({
-  html: true,
-  linkify: true,
-  typographer: true,
-  highlight(str, lang) {
-    if (lang && hljs.getLanguage(lang)) {
-      try { return hljs.highlight(str, { language: lang }).value; } catch (e) {}
-    }
-    return ''; // 无语言标注的代码块交给 markdown-it 默认处理
-  },
-});
-
-md.use(markdownitKatex, {
-  throwOnError: false,
-  errorColor: '#cf222e',
-});
-
-/* ================================================================
- * GitHub API：一次拉取整个仓库文件树
+ * 5. GitHub API
  * ================================================================ */
 async function fetchTree(force = false) {
   if (!force) {
@@ -261,21 +160,14 @@ async function fetchTree(force = false) {
       if (cached && Date.now() - cached.time < CONFIG.treeCacheTTL) return cached.data;
     } catch (e) {}
   }
-
   const headers = { 'Accept': 'application/vnd.github+json' };
-  const tryBranch = async (branch) =>
-    fetch(`${API_BASE}/git/trees/${branch}?recursive=1`, { headers });
-
+  const tryBranch = async branch => fetch(`${API_BASE}/git/trees/${branch}?recursive=1`, { headers });
   let res = await tryBranch(CONFIG.branch);
   if (res.status === 404 && CONFIG.branch === 'main') res = await tryBranch('master');
-
   if (!res.ok) {
-    if (res.status === 403 || res.status === 429) {
-      throw new Error('GitHub API 速率限制（匿名 60 次/小时）。请稍后重试。');
-    }
+    if (res.status === 403 || res.status === 429) throw new Error('GitHub API 速率限制（匿名 60 次/小时），请稍后重试。');
     throw new Error(`拉取文件列表失败：HTTP ${res.status}`);
   }
-
   const data = await res.json();
   if (data.truncated) console.warn('[OI Docs] 文件树被截断，部分文档可能未显示');
   localStorage.setItem(CACHE_KEY, JSON.stringify({ data, time: Date.now() }));
@@ -289,7 +181,7 @@ async function fetchMarkdown(relPath) {
 }
 
 /* ================================================================
- * 构建分类
+ * 6. 分类构建
  * ================================================================ */
 let CATEGORIES = [];
 let treeLoaded = false;
@@ -310,54 +202,36 @@ function buildDocs(tree) {
     if (!groups.has(catName)) groups.set(catName, []);
     groups.get(catName).push({ path, title });
   }
-
-  return [...groups.entries()]
-    .map(([name, items]) => {
-      const meta = CATEGORY_META[name] || {};
-      return {
-        name, icon: meta.icon || '📁', order: meta.order ?? 500,
-        items: items.sort((a, b) => a.title.localeCompare(b.title, 'zh-CN')),
-        collapsed: false,
-      };
-    })
-    .sort((a, b) => a.order - b.order || a.name.localeCompare(b.name, 'zh-CN'));
+  const arr = [...groups.entries()].map(([name, items]) => {
+    const meta = CATEGORY_META[name] || {};
+    return { name, icon: meta.icon || '📁', order: meta.order ?? 500,
+      items: items.sort((a, b) => a.title.localeCompare(b.title, 'zh-CN')), collapsed: false };
+  });
+  arr.sort((a, b) => a.order - b.order || a.name.localeCompare(b.name, 'zh-CN'));
+  return arr;
 }
 
 /* ================================================================
- * 侧边栏
+ * 7. 侧边栏
  * ================================================================ */
 function renderSidebar(keyword = '') {
   const q = keyword.trim().toLowerCase();
   const current = parseHash().path;
   let html = '';
-
   CATEGORIES.forEach((cat, ci) => {
-    const items = q
-      ? cat.items.filter(it => it.title.toLowerCase().includes(q) || cat.name.toLowerCase().includes(q))
-      : cat.items;
+    const items = q ? cat.items.filter(it => it.title.toLowerCase().includes(q) || cat.name.toLowerCase().includes(q)) : cat.items;
     if (q && items.length === 0) return;
-
     const collapsed = (cat.collapsed && !q) ? ' collapsed' : '';
     html += `<div class="nav-group${collapsed}" data-cat="${ci}">
-      <div class="nav-group-title">
-        <span class="caret">▼</span>
-        <span>${cat.icon} ${escapeHtml(cat.name)}</span>
-        <span class="count">${items.length}/${cat.items.length}</span>
-      </div>
+      <div class="nav-group-title"><span class="caret">▼</span><span>${cat.icon} ${escapeHtml(cat.name)}</span><span class="count">${items.length}/${cat.items.length}</span></div>
       <ul class="nav-items">`;
-
     if (items.length === 0) html += `<li class="nav-empty">空</li>`;
-    else {
-      for (const it of items) {
-        const active = it.path === current ? ' active' : '';
-        html += `<li><a href="#${escapeHtml(encodeURIComponent(it.path))}"
-          class="${active.trim()}" data-path="${escapeHtml(it.path)}"
-          title="${escapeHtml(it.path)}">${escapeHtml(it.title)}</a></li>`;
-      }
-    }
+    else items.forEach(it => {
+      const active = it.path === current ? ' active' : '';
+      html += `<li><a href="#${escapeHtml(encodeURIComponent(it.path))}" class="${active.trim()}" data-path="${escapeHtml(it.path)}" title="${escapeHtml(it.path)}">${escapeHtml(it.title)}</a></li>`;
+    });
     html += `</ul></div>`;
   });
-
   if (!html) html = `<div class="nav-empty">${treeLoaded ? '没有找到 .md 文档' : '正在读取仓库…'}</div>`;
   $('#nav').innerHTML = html;
 }
@@ -369,50 +243,33 @@ $('#nav').addEventListener('click', e => {
   group.classList.toggle('collapsed');
   CATEGORIES[+group.dataset.cat].collapsed = group.classList.contains('collapsed');
 });
-
 $('#search').addEventListener('input', e => renderSidebar(e.target.value));
 
 /* ================================================================
- * 路由
+ * 8. 路由
  * ================================================================ */
 function parseHash() {
   let h = location.hash.slice(1);
   if (!h) return { path: null, anchor: null };
   try { h = decodeURIComponent(h); } catch (e) {}
   const i = h.indexOf('#');
-  return i === -1
-    ? { path: h, anchor: null }
-    : { path: h.slice(0, i), anchor: h.slice(i + 1) };
+  return i === -1 ? { path: h, anchor: null } : { path: h.slice(0, i), anchor: h.slice(i + 1) };
 }
-
 function navigate(path, anchor) {
   const hash = encodeURIComponent(path) + (anchor ? '#' + anchor : '');
-  if (location.hash.slice(1) === hash) onHashChange();
-  else location.hash = hash;
+  if (location.hash.slice(1) === hash) onHashChange(); else location.hash = hash;
 }
 
 /* ================================================================
- * 欢迎页
+ * 9. 欢迎页 / 文档渲染
  * ================================================================ */
 function renderWelcome() {
   document.title = 'OI Docs';
-  const cards = CATEGORIES.map((c, i) => `
-    <div class="card" data-cat="${i}">
-      <div class="card-icon">${c.icon}</div>
-      <h3>${escapeHtml(c.name)}</h3>
-      <p>${c.items.length} 篇文档</p>
-    </div>`).join('');
-
-  $('#content').innerHTML = `
-    <div class="article">
-      <div class="hero">
-        <h1>OI Docs</h1>
-        <p>题解 · 总结 · 算法理论 —— 你的竞赛知识库</p>
-      </div>
-      <div class="card-grid">${cards || '<div class="nav-empty">还没有文档</div>'}</div>
-    </div>`;
+  const cards = CATEGORIES.map((c, i) =>
+    `<div class="card" data-cat="${i}"><div class="card-icon">${c.icon}</div><h3>${escapeHtml(c.name)}</h3><p>${c.items.length} 篇文档</p></div>`
+  ).join('');
+  $('#content').innerHTML = `<div class="article"><div class="hero"><h1>OI Docs</h1><p>题解 · 总结 · 算法理论</p></div><div class="card-grid">${cards || '<div class="nav-empty">还没有文档</div>'}</div></div>`;
 }
-
 $('#content').addEventListener('click', e => {
   const card = e.target.closest('.card');
   if (!card) return;
@@ -420,42 +277,26 @@ $('#content').addEventListener('click', e => {
   if (cat?.items[0]) navigate(cat.items[0].path);
 });
 
-/* ================================================================
- * 文档加载与渲染
- * ================================================================ */
-function showError(html) {
-  $('#content').innerHTML = `<div class="article"><div class="error">${html}</div></div>`;
-}
+function showError(html) { $('#content').innerHTML = `<div class="article"><div class="error">${html}</div></div>`; }
 
 function fixLinks(root, mdPath) {
   const dir = mdPath.includes('/') ? mdPath.slice(0, mdPath.lastIndexOf('/') + 1) : '';
-
   root.querySelectorAll('a[href]').forEach(a => {
     let href = a.getAttribute('href');
     if (!href) return;
-    if (/^[a-z][a-z0-9+.-]*:/i.test(href) || href.startsWith('//')) {
-      a.target = '_blank'; a.rel = 'noopener noreferrer'; return;
-    }
+    if (/^[a-z][a-z0-9+.-]*:/i.test(href) || href.startsWith('//')) { a.target = '_blank'; a.rel = 'noopener noreferrer'; return; }
     if (href.startsWith('#')) return;
-
     const [rawPath, anchor] = href.split('#');
     if (/\.md$/i.test(rawPath)) {
       const target = resolvePath(dir, rawPath);
       const isInternal = CATEGORIES.some(c => c.items.some(it => it.path === target));
-      if (isInternal) {
-        a.setAttribute('href', '#' + encodeURIComponent(target) + (anchor ? '#' + anchor : ''));
-      } else {
-        a.setAttribute('href',
-          `https://github.com/${CONFIG.owner}/${CONFIG.repo}/blob/${CONFIG.branch}/` +
-          encodePath(ROOT + target) + (anchor ? '#' + anchor : ''));
-        a.target = '_blank';
-      }
+      if (isInternal) a.setAttribute('href', '#' + encodeURIComponent(target) + (anchor ? '#' + anchor : ''));
+      else { a.setAttribute('href', `https://github.com/${CONFIG.owner}/${CONFIG.repo}/blob/${CONFIG.branch}/` + encodePath(ROOT + target) + (anchor ? '#' + anchor : '')); a.target = '_blank'; }
     } else {
       a.setAttribute('href', RAW_BASE + encodePath(ROOT + resolvePath(dir, rawPath)) + (anchor ? '#' + anchor : ''));
       a.target = '_blank';
     }
   });
-
   root.querySelectorAll('img[src]').forEach(img => {
     const src = img.getAttribute('src');
     if (!src || /^[a-z][a-z0-9+.-]*:/i.test(src) || src.startsWith('//')) return;
@@ -467,9 +308,7 @@ function fixLinks(root, mdPath) {
 function addHeadingIds(root) {
   root.querySelectorAll('h1,h2,h3,h4,h5,h6').forEach(h => {
     if (h.id) return;
-    h.id = h.textContent.trim().toLowerCase()
-      .replace(/[^\w\u4e00-\u9fa5\s-]/g, '')
-      .replace(/\s+/g, '-');
+    h.id = h.textContent.trim().toLowerCase().replace(/[^\w\u4e00-\u9fa5\s-]/g, '').replace(/\s+/g, '-');
   });
 }
 
@@ -477,75 +316,43 @@ async function openDoc(path, anchor) {
   closeSidebar();
   const cat = CATEGORIES.find(c => c.items.some(it => it.path === path));
   const item = cat?.items.find(it => it.path === path);
-
-  document.querySelectorAll('.nav-items a').forEach(a =>
-    a.classList.toggle('active', a.dataset.path === path));
-
+  document.querySelectorAll('.nav-items a').forEach(a => a.classList.toggle('active', a.dataset.path === path));
   if (!item) { showError(`未找到文档：<code>${escapeHtml(path)}</code>`); return; }
-
   $('#content').innerHTML = `<div class="article"><div class="loading">正在加载 ${escapeHtml(item.title)}…</div></div>`;
   window.scrollTo(0, 0);
-
   try {
     const text = await fetchMarkdown(path);
     const html = md.render(text);
-
-    $('#content').innerHTML = `
-      <div class="article">
-        <h1 class="article-title">${escapeHtml(item.title)}</h1>
-        <div class="article-meta">
-          <span class="badge">${escapeHtml(cat.name)}</span>
-          <span>${escapeHtml(path)}</span>
-        </div>
-        <div class="md">${html}</div>
-      </div>`;
-
+    $('#content').innerHTML = `<div class="article"><h1 class="article-title">${escapeHtml(item.title)}</h1><div class="article-meta"><span class="badge">${escapeHtml(cat.name)}</span><span>${escapeHtml(path)}</span></div><div class="md">${html}</div></div>`;
     const mdRoot = $('#content .md');
     fixLinks(mdRoot, path);
     addHeadingIds(mdRoot);
-
     document.title = `${item.title} · OI Docs`;
-
     if (anchor) {
       const el = document.getElementById(anchor) || mdRoot.querySelector(`[id="${CSS.escape(anchor)}"]`);
       if (el) setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
     }
   } catch (err) {
-    showError(`
-      <strong>无法加载文档</strong><br>
-      路径：<code>${escapeHtml(path)}</code><br>
-      原因：${escapeHtml(err.message || String(err))}<br>
-      <small>请确认文件存在、配置正确，并通过 http(s) 访问页面（file:// 下 fetch 会被浏览器阻止）。</small>
-    `);
+    showError(`<strong>无法加载文档</strong><br>路径：<code>${escapeHtml(path)}</code><br>原因：${escapeHtml(err.message || String(err))}<br><small>请确认文件存在、配置正确，并通过 http(s) 访问页面。</small>`);
   }
 }
 
 async function onHashChange() {
   const { path, anchor } = parseHash();
-  if (path) await openDoc(path, anchor);
-  else renderWelcome();
+  if (path) await openDoc(path, anchor); else renderWelcome();
 }
 
 /* ================================================================
- * 移动端 / 主题 / 刷新
+ * 10. 交互
  * ================================================================ */
-const sidebar = $('#sidebar');
-const backdrop = $('#backdrop');
-function closeSidebar() {
-  sidebar.classList.remove('open');
-  backdrop.classList.remove('show');
-}
-$('#menuBtn').addEventListener('click', () => {
-  sidebar.classList.toggle('open');
-  backdrop.classList.toggle('show');
-});
+const sidebar = $('#sidebar'); const backdrop = $('#backdrop');
+function closeSidebar() { sidebar.classList.remove('open'); backdrop.classList.remove('show'); }
+$('#menuBtn').addEventListener('click', () => { sidebar.classList.toggle('open'); backdrop.classList.toggle('show'); });
 backdrop.addEventListener('click', closeSidebar);
 
 const savedTheme = localStorage.getItem('oi-docs-theme');
 if (savedTheme) document.documentElement.dataset.theme = savedTheme;
-else if (matchMedia?.('(prefers-color-scheme: dark)').matches)
-  document.documentElement.dataset.theme = 'dark';
-
+else if (matchMedia?.('(prefers-color-scheme: dark)').matches) document.documentElement.dataset.theme = 'dark';
 $('#themeBtn').addEventListener('click', () => {
   const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
   document.documentElement.dataset.theme = next;
@@ -561,42 +368,28 @@ $('#refreshBtn').addEventListener('click', async () => {
     treeLoaded = true;
     renderSidebar($('#search').value);
     await onHashChange();
-  } catch (err) {
-    showError(`<strong>同步失败</strong><br>${escapeHtml(err.message)}`);
-  } finally {
-    $('#refreshBtn').disabled = false;
-  }
+  } catch (err) { showError(`<strong>同步失败</strong><br>${escapeHtml(err.message)}`); }
+  finally { $('#refreshBtn').disabled = false; }
 });
 
 /* ================================================================
- * 启动
+ * 11. 启动
  * ================================================================ */
 async function init() {
-  if (!CONFIG.owner || !CONFIG.repo ||
-      CONFIG.owner === 'YOUR_GITHUB_USERNAME' || CONFIG.repo === 'YOUR_REPO_NAME') {
-    showError(`
-      <strong>尚未配置仓库信息</strong><br>
-      请打开 <code>index.html</code>，编辑顶部的 <code>CONFIG</code>：<br>
-      <code>owner: '你的 GitHub 用户名'</code><br>
-      <code>repo:  '你的仓库名'</code>
-    `);
+  if (!CONFIG.owner || !CONFIG.repo || CONFIG.owner === 'YOUR_GITHUB_USERNAME' || CONFIG.repo === 'YOUR_REPO_NAME') {
+    showError(`<strong>尚未配置仓库信息</strong><br>请编辑 <code>CONFIG</code>：<br><code>owner: '你的 GitHub 用户名'</code><br><code>repo:  '你的仓库名'</code>`);
     return;
   }
-
   renderSidebar();
   $('#content').innerHTML = `<div class="article"><div class="loading">正在读取仓库文件列表…</div></div>`;
-
   try {
     const tree = await fetchTree();
     CATEGORIES = buildDocs(tree);
     treeLoaded = true;
     renderSidebar();
     await onHashChange();
-  } catch (err) {
-    showError(`<strong>初始化失败</strong><br>${escapeHtml(err.message)}`);
-  }
+  } catch (err) { showError(`<strong>初始化失败</strong><br>${escapeHtml(err.message)}`); }
 }
-
 window.addEventListener('hashchange', onHashChange);
 init();
 </script>
