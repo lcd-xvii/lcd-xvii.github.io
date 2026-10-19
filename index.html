@@ -4,7 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>OI Docs</title>
+
+<!-- KaTeX（公式渲染样式） -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<!-- 代码高亮样式 -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github-dark.min.css">
+
 <style>
   :root{
     --bg:#fff; --bg-soft:#f6f8fa; --text:#1f2328; --text-soft:#59636e;
@@ -66,6 +71,10 @@
   .nav-group-title .caret{display:inline-block; transition:transform .2s; font-size:10px}
   .nav-group.collapsed .caret{transform:rotate(-90deg)}
   .nav-group.collapsed .nav-items{display:none}
+  .nav-group-title .count{
+    margin-left:auto; font-size:11px; background:var(--border); color:var(--text-soft);
+    padding:1px 7px; border-radius:999px;
+  }
   .nav-items{list-style:none; margin:0; padding:0 0 0 6px}
   .nav-items li a{
     display:block; padding:6px 10px; border-radius:7px; font-size:14px; color:var(--text);
@@ -73,7 +82,7 @@
   }
   .nav-items li a:hover{background:var(--border); text-decoration:none}
   .nav-items li a.active{background:var(--accent-soft); color:var(--accent); font-weight:600}
-  .nav-empty{padding:4px 10px; font-size:13px; color:var(--text-soft)}
+  .nav-empty{padding:6px 10px; font-size:13px; color:var(--text-soft)}
 
   main{flex:1; min-width:0; padding:32px 40px 80px}
   .article{max-width:860px; margin:0 auto}
@@ -118,18 +127,28 @@
   .md img{max-width:100%; border-radius:8px}
   .md hr{border:none; border-top:1px solid var(--border); margin:2em 0}
 
+  /* KaTeX 块级公式包裹 */
+  .katex-block{display:block; overflow-x:auto; overflow-y:hidden; margin:1em 0; text-align:center}
+  .katex-error{color:#cf222e; background:#ffebe9; padding:2px 6px; border-radius:4px; font-family:monospace}
+
   .article-title{font-size:28px; margin:0 0 4px; font-weight:700}
   .article-meta{
     font-size:13px; color:var(--text-soft); margin-bottom:24px;
     display:flex; gap:12px; align-items:center; flex-wrap:wrap;
   }
   .badge{background:var(--accent-soft); color:var(--accent); padding:2px 10px; border-radius:999px; font-size:12px; font-weight:600}
-  .loading{color:var(--text-soft); padding:40px 0; text-align:center}
+  .loading{color:var(--text-soft); padding:60px 0; text-align:center}
+  .loading::before{content:""; display:inline-block; width:14px; height:14px; margin-right:8px;
+    border:2px solid var(--border); border-top-color:var(--accent); border-radius:50%;
+    vertical-align:-2px; animation:spin .8s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
   .error{
     color:#cf222e; background:#ffebe9; border:1px solid #ff8182;
-    padding:16px; border-radius:10px; margin:20px 0; font-size:14px;
+    padding:16px; border-radius:10px; margin:20px 0; font-size:14px; line-height:1.8;
   }
+  .error code{background:rgba(0,0,0,.06); padding:1px 6px; border-radius:4px}
   [data-theme="dark"] .error{background:#3d1d1f; color:#ff8182; border-color:#6b2b2f}
+  [data-theme="dark"] .error code{background:rgba(255,255,255,.08)}
 
   .backdrop{display:none; position:fixed; inset:56px 0 0 0; background:rgba(0,0,0,.4); z-index:40}
   @media (max-width:860px){
@@ -152,6 +171,7 @@
   <button class="btn menu-btn" id="menuBtn" aria-label="菜单">☰</button>
   <div class="brand"><span class="logo">OI</span> OI Docs</div>
   <div class="spacer"></div>
+  <button class="btn" id="refreshBtn" title="重新拉取文件列表">⟳ 同步</button>
   <button class="btn" id="themeBtn" title="切换主题">🌓</button>
 </header>
 
@@ -164,90 +184,231 @@
   <main><div id="content"></div></main>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked@12.0.0/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
 <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
 <script>
-const CATEGORIES = [
-  {
-    name: "题解",
-    icon: "📝",
-    items: [
-    ]
-  },
-  {
-    name: "总结",
-    icon: "📋",
-    items: [
-      { title: "0829 周总结", path: "总结/周总结-0829.md" },
-      { title: "0920 周总结", path: "总结/周总结-0920.md" },
-      { title: "1004 周总结", path: "总结/周总结-1004.md" },
-      { title: "1011 周总结", path: "总结/周总结-1011.md" },
-      { title: "1018 周总结", path: "总结/周总结-1018.md" }
-    ]
-  },
-  {
-    name: "算法理论",
-    icon: "📚",
-    items: [
-    ]
-  }
-];
-/* ================================================================ */
+/* ================================================================
+ * ⚠️ 必改配置
+ * ================================================================ */
+const CONFIG = {
+  owner:  'lcd-xvii',
+  repo:   'oi-docs',
+  branch: 'main',
+  contentRoot: '',
+  treeCacheTTL: 10 * 60 * 1000,     // 文件列表缓存时长（毫秒）
+};
 
+/* 分类显示配置（可选）：控制顺序、图标；未列出的文件夹会自动出现 */
+const CATEGORY_META = {
+  '题解':     { icon: '📝', order: 1 },
+  '总结':     { icon: '📋', order: 2 },
+  '算法理论': { icon: '📚', order: 3 },
+  '杂项':     { icon: '📁', order: 999 },
+};
+
+/* ================================================================
+ * 基础设施
+ * ================================================================ */
 const $ = s => document.querySelector(s);
-const nav = $('#nav');
-const content = $('#content');
+const ROOT = CONFIG.contentRoot ? CONFIG.contentRoot.replace(/^\/+|\/+$/g, '') + '/' : '';
+const RAW_BASE = `https://raw.githubusercontent.com/${CONFIG.owner}/${CONFIG.repo}/${CONFIG.branch}/`;
+const API_BASE = `https://api.github.com/repos/${CONFIG.owner}/${CONFIG.repo}`;
+const CACHE_KEY = `oi-docs-tree:${CONFIG.owner}/${CONFIG.repo}/${CONFIG.branch}/${ROOT}`;
 
-function escapeHtml(s){
-  return String(s).replace(/[&<>"']/g, c => (
-    {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]
-  ));
+const escapeHtml = s => String(s).replace(/[&<>"']/g, c => (
+  {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]
+));
+const encodePath = p => p.split('/').map(encodeURIComponent).join('/');
+const resolvePath = (dir, rel) => {
+  const out = [];
+  (dir + rel).split('/').forEach(p => {
+    if (!p || p === '.') return;
+    if (p === '..') out.pop(); else out.push(p);
+  });
+  return out.join('/');
+};
+
+/* ================================================================
+ * KaTeX for marked（自定义扩展，不依赖第三方 marked 插件）
+ * ================================================================ */
+const katexBlockExt = {
+  name: 'katexBlock',
+  level: 'inline',
+  start(src) {
+    const m = /(?<!\\)\$\$/.exec(src);
+    return m ? m.index : -1;
+  },
+  tokenizer(src) {
+    const m = /^\$\$([\s\S]+?)\$\$/.exec(src);
+    if (m) {
+      return { type: 'katexBlock', raw: m[0], text: m[1].trim() };
+    }
+  },
+  renderer(t) {
+    try {
+      return `<div class="katex-block">${katex.renderToString(t.text, {
+        displayMode: true, throwOnError: false, output: 'htmlAndMathml'
+      })}</div>`;
+    } catch (e) {
+      return `<span class="katex-error">${escapeHtml(t.raw)}</span>`;
+    }
+  }
+};
+
+const katexInlineExt = {
+  name: 'katexInline',
+  level: 'inline',
+  start(src) {
+    const m = /(?<!\\)\$/.exec(src);
+    return m ? m.index : -1;
+  },
+  tokenizer(src) {
+    if (src.startsWith('$$')) return; // 交给块级扩展
+    // $...$：开头/结尾不能空白，结尾 $ 后不能紧跟数字（避免 "$100 和 $200" 误判）
+    const m = /^\$(?!\s)([^$\n]*?[^\s$]|[^\s$])\$(?!\d)/.exec(src);
+    if (m) {
+      return { type: 'katexInline', raw: m[0], text: m[1] };
+    }
+  },
+  renderer(t) {
+    try {
+      return katex.renderToString(t.text, {
+        displayMode: false, throwOnError: false, output: 'htmlAndMathml'
+      });
+    } catch (e) {
+      return `<span class="katex-error">${escapeHtml(t.raw)}</span>`;
+    }
+  }
+};
+
+marked.use({ extensions: [katexBlockExt, katexInlineExt] });
+marked.setOptions({ gfm: true, breaks: false });
+
+/* ================================================================
+ * GitHub API：一次拉取整个仓库文件树
+ * ================================================================ */
+async function fetchTree(force = false) {
+  if (!force) {
+    try {
+      const cached = JSON.parse(localStorage.getItem(CACHE_KEY) || 'null');
+      if (cached && Date.now() - cached.time < CONFIG.treeCacheTTL) return cached.data;
+    } catch (e) {}
+  }
+
+  const headers = { 'Accept': 'application/vnd.github+json' };
+  const tryBranch = async (branch) => {
+    const res = await fetch(`${API_BASE}/git/trees/${branch}?recursive=1`, { headers });
+    return res;
+  };
+
+  let res = await tryBranch(CONFIG.branch);
+  // 分支不存在则尝试 master
+  if (res.status === 404 && CONFIG.branch === 'main') {
+    res = await tryBranch('master');
+  }
+  if (!res.ok) {
+    if (res.status === 403 || res.status === 429) {
+      throw new Error('GitHub API 速率限制（匿名 60 次/小时）。请稍后重试，或参考下方「进阶」使用 GitHub Actions 生成 docs.json。');
+    }
+    throw new Error(`拉取文件列表失败：HTTP ${res.status}`);
+  }
+
+  const data = await res.json();
+  if (data.truncated) console.warn('[OI Docs] 文件树被截断，部分文档可能未显示');
+  localStorage.setItem(CACHE_KEY, JSON.stringify({ data, time: Date.now() }));
+  return data;
 }
 
-function parseHash(){
-  let h = location.hash.replace(/^#/, '');
-  if (!h) return null;
-  try { h = decodeURIComponent(h); } catch(e) {}
-  return h;
+async function fetchMarkdown(relPath) {
+  const url = RAW_BASE + encodePath(ROOT + relPath);
+  const res = await fetch(url, { cache: 'no-cache' });
+  if (!res.ok) throw new Error(`HTTP ${res.status} — ${relPath}`);
+  return await res.text();
 }
 
-function navigate(path){
-  location.hash = '#' + path;   // 浏览器自动编码中文
+/* ================================================================
+ * 从文件树构建分类结构
+ * ================================================================ */
+let CATEGORIES = [];
+let treeLoaded = false;
+
+function buildDocs(tree) {
+  const blobs = (tree.tree || [])
+    .filter(t => t.type === 'blob' && /\.md$/i.test(t.path))
+    .filter(t => !t.path.split('/').some(seg => seg.startsWith('.')))
+    .filter(t => !/^_/.test(t.path.split('/').pop()))  // 下划线开头 = 隐藏
+    .filter(t => !ROOT || t.path.startsWith(ROOT))
+    .map(t => ROOT ? t.path.slice(ROOT.length) : t.path);
+
+  const groups = new Map();
+  for (const path of blobs) {
+    const parts = path.split('/');
+    const catName = parts.length === 1 ? '杂项' : parts[0];
+    const title = parts[parts.length - 1].replace(/\.md$/i, '');
+    if (!groups.has(catName)) groups.set(catName, []);
+    groups.get(catName).push({ path, title });
+  }
+
+  const arr = [...groups.entries()].map(([name, items]) => {
+    const meta = CATEGORY_META[name] || {};
+    return {
+      name,
+      icon: meta.icon || '📁',
+      order: meta.order ?? 500,
+      items: items.sort((a, b) => a.title.localeCompare(b.title, 'zh-CN')),
+      collapsed: false,
+    };
+  });
+
+  arr.sort((a, b) => a.order - b.order || a.name.localeCompare(b.name, 'zh-CN'));
+  return arr;
 }
 
-/* ---------- 侧边栏 ---------- */
-function renderSidebar(keyword = ''){
+/* ================================================================
+ * 侧边栏
+ * ================================================================ */
+function renderSidebar(keyword = '') {
   const q = keyword.trim().toLowerCase();
-  const current = parseHash();
+  const current = parseHash().path;
   let html = '';
 
   CATEGORIES.forEach((cat, ci) => {
-    const items = cat.items.filter(it =>
-      !q || it.title.toLowerCase().includes(q) || cat.name.toLowerCase().includes(q)
-    );
+    const items = q
+      ? cat.items.filter(it =>
+          it.title.toLowerCase().includes(q) || cat.name.toLowerCase().includes(q))
+      : cat.items;
     if (q && items.length === 0) return;
 
-    const collapsed = (!q && cat.collapsed) ? ' collapsed' : '';
+    const collapsed = (cat.collapsed && !q) ? ' collapsed' : '';
     html += `<div class="nav-group${collapsed}" data-cat="${ci}">
-      <div class="nav-group-title"><span class="caret">▼</span><span>${cat.icon} ${escapeHtml(cat.name)}</span></div>
+      <div class="nav-group-title">
+        <span class="caret">▼</span>
+        <span>${cat.icon} ${escapeHtml(cat.name)}</span>
+        <span class="count">${items.length}/${cat.items.length}</span>
+      </div>
       <ul class="nav-items">`;
 
-    if (items.length === 0){
-      html += `<li class="nav-empty">暂无文档</li>`;
+    if (items.length === 0) {
+      html += `<li class="nav-empty">空</li>`;
     } else {
-      items.forEach(it => {
+      for (const it of items) {
         const active = it.path === current ? ' active' : '';
-        html += `<li><a href="#${escapeHtml(it.path)}" data-path="${escapeHtml(it.path)}"
-                   class="${active.trim()}" title="${escapeHtml(it.title)}">${escapeHtml(it.title)}</a></li>`;
-      });
+        html += `<li><a href="#${escapeHtml(encodeURIComponent(it.path))}"
+          class="${active.trim()}" data-path="${escapeHtml(it.path)}"
+          title="${escapeHtml(it.path)}">${escapeHtml(it.title)}</a></li>`;
+      }
     }
     html += `</ul></div>`;
   });
 
-  nav.innerHTML = html || `<div class="nav-empty">没有匹配的文档</div>`;
+  if (!html) {
+    html = `<div class="nav-empty">${treeLoaded ? '没有找到 .md 文档' : '正在读取仓库…'}</div>`;
+  }
+  $('#nav').innerHTML = html;
 }
 
-nav.addEventListener('click', e => {
+$('#nav').addEventListener('click', e => {
   const t = e.target.closest('.nav-group-title');
   if (!t) return;
   const group = t.parentElement;
@@ -257,8 +418,29 @@ nav.addEventListener('click', e => {
 
 $('#search').addEventListener('input', e => renderSidebar(e.target.value));
 
-/* ---------- 欢迎页 ---------- */
-function renderWelcome(){
+/* ================================================================
+ * 路由
+ * ================================================================ */
+function parseHash() {
+  let h = location.hash.slice(1);
+  if (!h) return { path: null, anchor: null };
+  try { h = decodeURIComponent(h); } catch (e) {}
+  const i = h.indexOf('#');
+  return i === -1
+    ? { path: h, anchor: null }
+    : { path: h.slice(0, i), anchor: h.slice(i + 1) };
+}
+
+function navigate(path, anchor) {
+  const hash = encodeURIComponent(path) + (anchor ? '#' + anchor : '');
+  if (location.hash.slice(1) === hash) onHashChange();
+  else location.hash = hash;
+}
+
+/* ================================================================
+ * 欢迎页
+ * ================================================================ */
+function renderWelcome() {
   document.title = 'OI Docs';
   const cards = CATEGORIES.map((c, i) => `
     <div class="card" data-cat="${i}">
@@ -267,129 +449,144 @@ function renderWelcome(){
       <p>${c.items.length} 篇文档</p>
     </div>`).join('');
 
-  content.innerHTML = `
+  $('#content').innerHTML = `
     <div class="article">
       <div class="hero">
         <h1>OI Docs</h1>
         <p>题解 · 总结 · 算法理论 —— 你的竞赛知识库</p>
       </div>
-      <div class="card-grid">${cards}</div>
+      <div class="card-grid">${cards || '<div class="nav-empty">还没有文档</div>'}</div>
     </div>`;
 }
 
-content.addEventListener('click', e => {
+$('#content').addEventListener('click', e => {
   const card = e.target.closest('.card');
   if (!card) return;
   const cat = CATEGORIES[+card.dataset.cat];
-  if (cat && cat.items[0]) navigate(cat.items[0].path);
+  if (cat?.items[0]) navigate(cat.items[0].path);
 });
 
-/* ---------- 文档加载 ---------- */
-async function fetchDoc(path){
-  const candidates = [path];
-  if (path.endsWith('.md')) candidates.push(path.slice(0, -3) + '.html');
-  for (const p of candidates){
-    try {
-      const res = await fetch(encodeURI(p), { cache: 'no-cache' });
-      if (res.ok) return { text: await res.text(), isHtml: p.endsWith('.html') };
-    } catch(e) {}
-  }
-  throw new Error('404 Not Found');
+/* ================================================================
+ * 文档加载与渲染
+ * ================================================================ */
+function showError(html) {
+  $('#content').innerHTML = `<div class="article"><div class="error">${html}</div></div>`;
 }
 
-function resolvePath(base, rel){
-  const parts = base.split('/');
-  parts.pop();
-  rel.split('/').forEach(p => {
-    if (!p || p === '.') return;
-    if (p === '..') parts.pop(); else parts.push(p);
-  });
-  return parts.join('/');
-}
+function fixLinks(root, mdPath) {
+  const dir = mdPath.includes('/') ? mdPath.slice(0, mdPath.lastIndexOf('/') + 1) : '';
 
-function fixLinks(root, mdPath){
-  const dir = mdPath.includes('/') ? mdPath.slice(0, mdPath.lastIndexOf('/')) : '';
   root.querySelectorAll('a[href]').forEach(a => {
-    const href = a.getAttribute('href');
-    if (!href || href.startsWith('#') || /^[a-z]+:/i.test(href)){
-      if (/^https?:/i.test(href || '')){ a.target = '_blank'; a.rel = 'noopener noreferrer'; }
+    let href = a.getAttribute('href');
+    if (!href) return;
+
+    if (/^[a-z][a-z0-9+.-]*:/i.test(href) || href.startsWith('//')) {
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
       return;
     }
-    const [p, hash] = href.split('#');
-    if (p.endsWith('.md')){
-      const target = resolvePath(mdPath, p);
-      if (CATEGORIES.some(c => c.items.some(it => it.path === target))){
-        a.setAttribute('href', '#' + target + (hash ? '#' + hash : ''));
-        return;
+    if (href.startsWith('#')) return;
+
+    const [rawPath, anchor] = href.split('#');
+    if (/\.md$/i.test(rawPath)) {
+      const target = resolvePath(dir, rawPath);
+      const isInternal = CATEGORIES.some(c => c.items.some(it => it.path === target));
+      if (isInternal) {
+        a.setAttribute('href', '#' + encodeURIComponent(target) + (anchor ? '#' + anchor : ''));
+      } else {
+        a.setAttribute('href',
+          `https://github.com/${CONFIG.owner}/${CONFIG.repo}/blob/${CONFIG.branch}/` +
+          encodePath(ROOT + target) + (anchor ? '#' + anchor : ''));
+        a.target = '_blank';
       }
+    } else {
+      a.setAttribute('href',
+        RAW_BASE + encodePath(ROOT + resolvePath(dir, rawPath)) + (anchor ? '#' + anchor : ''));
+      a.target = '_blank';
     }
-    a.setAttribute('href', (dir ? dir + '/' : '') + p + (hash ? '#' + hash : ''));
   });
+
   root.querySelectorAll('img[src]').forEach(img => {
     const src = img.getAttribute('src');
-    if (!src || /^[a-z]+:/i.test(src) || src.startsWith('/')) return;
-    img.setAttribute('src', (dir ? dir + '/' : '') + src);
+    if (!src || /^[a-z][a-z0-9+.-]*:/i.test(src) || src.startsWith('//')) return;
+    const rel = src.startsWith('/') ? src.slice(1) : resolvePath(dir, src);
+    img.setAttribute('src', RAW_BASE + encodePath(ROOT + rel));
   });
 }
 
-async function openDoc(path){
+function addHeadingIds(root) {
+  root.querySelectorAll('h1,h2,h3,h4,h5,h6').forEach(h => {
+    if (h.id) return;
+    h.id = h.textContent.trim().toLowerCase()
+      .replace(/[^\w\u4e00-\u9fa5\s-]/g, '')
+      .replace(/\s+/g, '-');
+  });
+}
+
+async function openDoc(path, anchor) {
   closeSidebar();
   const cat = CATEGORIES.find(c => c.items.some(it => it.path === path));
-  const item = cat && cat.items.find(it => it.path === path);
+  const item = cat?.items.find(it => it.path === path);
 
   document.querySelectorAll('.nav-items a').forEach(a =>
-    a.classList.toggle('active', a.dataset.path === path)
-  );
+    a.classList.toggle('active', a.dataset.path === path));
 
-  if (!item){
-    content.innerHTML = `<div class="article"><div class="error">未找到文档：<code>${escapeHtml(path)}</code></div></div>`;
+  if (!item) {
+    showError(`未找到文档：<code>${escapeHtml(path)}</code>`);
     return;
   }
 
-  content.innerHTML = `<div class="article"><div class="loading">正在加载…</div></div>`;
+  $('#content').innerHTML = `<div class="article"><div class="loading">正在加载 ${escapeHtml(item.title)}…</div></div>`;
   window.scrollTo(0, 0);
 
   try {
-    const { text, isHtml } = await fetchDoc(path);
-    const body = isHtml ? text : marked.parse(text);
-    content.innerHTML = `
+    const text = await fetchMarkdown(path);
+    const html = marked.parse(text);
+
+    $('#content').innerHTML = `
       <div class="article">
         <h1 class="article-title">${escapeHtml(item.title)}</h1>
         <div class="article-meta">
           <span class="badge">${escapeHtml(cat.name)}</span>
           <span>${escapeHtml(path)}</span>
         </div>
-        <div class="md">${body}</div>
+        <div class="md">${html}</div>
       </div>`;
 
-    const mdRoot = content.querySelector('.md');
-    fixLinks(mdRoot, path);
-    mdRoot.querySelectorAll('pre code').forEach(el => {
-      if (window.hljs) hljs.highlightElement(el);
-    });
+    const md = $('#content .md');
+    fixLinks(md, path);
+    addHeadingIds(md);
+    md.querySelectorAll('pre code').forEach(el => hljs.highlightElement(el));
+
     document.title = `${item.title} · OI Docs`;
-  } catch (err){
-    content.innerHTML = `
-      <div class="article"><div class="error">
-        <strong>无法加载文档</strong><br>
-        路径：<code>${escapeHtml(path)}</code><br>
-        错误：${escapeHtml(err.message || String(err))}<br>
-        <small>请确认文件存在，并通过 http(s) 访问页面（file:// 下 fetch 会被浏览器阻止）。</small>
-      </div></div>`;
+
+    if (anchor) {
+      const el = document.getElementById(anchor) ||
+                 md.querySelector(`[id="${CSS.escape(anchor)}"]`);
+      if (el) setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+    }
+  } catch (err) {
+    showError(`
+      <strong>无法加载文档</strong><br>
+      路径：<code>${escapeHtml(path)}</code><br>
+      原因：${escapeHtml(err.message || String(err))}<br>
+      <small>请确认文件存在、配置正确，并通过 http(s) 访问页面（file:// 下 fetch 会被浏览器阻止）。</small>
+    `);
   }
 }
 
-/* ---------- 路由 ---------- */
-async function onHashChange(){
-  const path = parseHash();
-  if (path) await openDoc(path);
+async function onHashChange() {
+  const { path, anchor } = parseHash();
+  if (path) await openDoc(path, anchor);
   else renderWelcome();
 }
 
-/* ---------- 移动端侧边栏 ---------- */
+/* ================================================================
+ * 移动端 / 主题 / 刷新
+ * ================================================================ */
 const sidebar = $('#sidebar');
 const backdrop = $('#backdrop');
-function closeSidebar(){
+function closeSidebar() {
   sidebar.classList.remove('open');
   backdrop.classList.remove('show');
 }
@@ -399,10 +596,9 @@ $('#menuBtn').addEventListener('click', () => {
 });
 backdrop.addEventListener('click', closeSidebar);
 
-/* ---------- 主题 ---------- */
 const savedTheme = localStorage.getItem('oi-docs-theme');
 if (savedTheme) document.documentElement.dataset.theme = savedTheme;
-else if (window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches)
+else if (matchMedia?.('(prefers-color-scheme: dark)').matches)
   document.documentElement.dataset.theme = 'dark';
 
 $('#themeBtn').addEventListener('click', () => {
@@ -411,11 +607,53 @@ $('#themeBtn').addEventListener('click', () => {
   localStorage.setItem('oi-docs-theme', next);
 });
 
-/* ---------- 启动 ---------- */
-marked.setOptions({ gfm: true, breaks: false });
-renderSidebar();
-onHashChange();
+$('#refreshBtn').addEventListener('click', async () => {
+  $('#refreshBtn').disabled = true;
+  try {
+    localStorage.removeItem(CACHE_KEY);
+    const tree = await fetchTree(true);
+    CATEGORIES = buildDocs(tree);
+    treeLoaded = true;
+    renderSidebar($('#search').value);
+    await onHashChange();
+  } catch (err) {
+    showError(`<strong>同步失败</strong><br>${escapeHtml(err.message)}`);
+  } finally {
+    $('#refreshBtn').disabled = false;
+  }
+});
+
+/* ================================================================
+ * 启动
+ * ================================================================ */
+async function init() {
+  if (!CONFIG.owner || !CONFIG.repo ||
+      CONFIG.owner === 'YOUR_GITHUB_USERNAME' || CONFIG.repo === 'YOUR_REPO_NAME') {
+    showError(`
+      <strong>尚未配置仓库信息</strong><br>
+      请打开 <code>index.html</code>，编辑顶部的 <code>CONFIG</code>：<br>
+      <code>owner: '你的 GitHub 用户名'</code><br>
+      <code>repo:  '你的仓库名'</code>
+    `);
+    return;
+  }
+
+  renderSidebar();
+  $('#content').innerHTML = `<div class="article"><div class="loading">正在读取仓库文件列表…</div></div>`;
+
+  try {
+    const tree = await fetchTree();
+    CATEGORIES = buildDocs(tree);
+    treeLoaded = true;
+    renderSidebar();
+    await onHashChange();
+  } catch (err) {
+    showError(`<strong>初始化失败</strong><br>${escapeHtml(err.message)}`);
+  }
+}
+
 window.addEventListener('hashchange', onHashChange);
+init();
 </script>
 </body>
 </html>
