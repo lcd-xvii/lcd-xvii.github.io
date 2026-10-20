@@ -10,7 +10,6 @@
 <link id="hljs-dark" rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github-dark.min.css" disabled>
 
 <script>
-/* 尽早确定主题，避免首屏闪烁，并同步代码高亮主题 */
 (function () {
   var saved = localStorage.getItem('oi-docs-theme');
   var dark = saved ? saved === 'dark'
@@ -21,28 +20,65 @@
   var d = document.getElementById('hljs-dark');
   if (l) l.disabled = dark;
   if (d) d.disabled = !dark;
+
+  var otherHref = dark
+    ? 'https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github.min.css'
+    : 'https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github-dark.min.css';
+  var pre = document.createElement('link');
+  pre.rel = 'preload';
+  pre.as = 'style';
+  pre.href = otherHref;
+  document.head.appendChild(pre);
 })();
 </script>
 
 <style>
-  :root{--bg:#fff;--bg-soft:#f6f8fa;--text:#1f2328;--text-soft:#59636e;--border:#d1d9e0;--accent:#0969da;--accent-soft:#ddf4ff;--code-bg:#f6f8fa;--code-block-bg:#f6f8fa;--code-block-fg:#1f2328;--sidebar-w:280px}
+  :root{--bg:#fff;--bg-soft:#f6f8fa;--text:#1f2328;--text-soft:#59636e;--border:#d1d9e0;--accent:#0969da;--accent-soft:#ddf4ff;--code-bg:#f6f8fa;--code-block-bg:#f6f8fa;--code-block-fg:#1f2328;--sidebar-w:280px;
+    --tt: background-color .28s ease, color .28s ease, border-color .28s ease, box-shadow .28s ease, fill .28s ease, stroke .28s ease}
   [data-theme="dark"]{--bg:#0d1117;--bg-soft:#161b22;--text:#e6edf3;--text-soft:#9198a1;--border:#30363d;--accent:#4493f8;--accent-soft:#121d2f;--code-bg:#161b22;--code-block-bg:#0d1117;--code-block-fg:#e6edf3}
+
+  *,*::before,*::after{transition:var(--tt)}
   *{box-sizing:border-box}html,body{margin:0;padding:0}
   body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);line-height:1.7;font-size:16px}
   a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
   header{position:sticky;top:0;z-index:50;height:56px;display:flex;align-items:center;gap:12px;padding:0 16px;background:var(--bg);border-bottom:1px solid var(--border)}
   .brand{font-weight:700;font-size:18px;display:flex;align-items:center;gap:8px}
   .brand .logo{width:26px;height:26px;border-radius:7px;background:linear-gradient(135deg,#0969da,#8250df);display:grid;place-items:center;color:#fff;font-size:13px;font-weight:700}
-  .spacer{flex:1}.btn{border:1px solid var(--border);background:var(--bg-soft);color:var(--text);padding:6px 12px;border-radius:8px;font-size:14px;cursor:pointer;transition:.15s}
+  .spacer{flex:1}.btn{border:1px solid var(--border);background:var(--bg-soft);color:var(--text);padding:6px 12px;border-radius:8px;font-size:14px;cursor:pointer;transition:var(--tt),transform .15s ease}
   .btn:hover{background:var(--border)}.btn:disabled{opacity:.5;cursor:not-allowed}.menu-btn{display:none}
   .layout{display:flex;min-height:calc(100vh - 56px)}
-  aside{width:var(--sidebar-w);flex-shrink:0;border-right:1px solid var(--border);background:var(--bg-soft);padding:16px 12px 40px;position:sticky;top:56px;height:calc(100vh - 56px);overflow-y:auto}
+  aside{width:var(--sidebar-w);flex-shrink:0;border-right:1px solid var(--border);background:var(--bg-soft);padding:16px 12px 40px;position:sticky;top:56px;height:calc(100vh - 56px);overflow-y:auto;transition:var(--tt),transform .25s ease}
+  .search-wrap{position:relative}
   .search{width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font-size:14px;margin-bottom:12px;outline:none}
   .search:focus{border-color:var(--accent)}
+
+  /* 搜索结果浮层（fixed，由 JS 定位） */
+  .search-results{display:none;position:fixed;z-index:70;background:var(--bg);border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.18);max-height:60vh;overflow-y:auto}
+  .search-results.show{display:block}
+  .search-result{display:block;padding:8px 10px;border-bottom:1px solid var(--border);font-size:13px;color:var(--text);cursor:pointer}
+  .search-result:last-child{border-bottom:none}
+  .search-result:hover,.search-result.sel{background:var(--bg-soft);text-decoration:none}
+  .search-result .sr-title{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .search-result .sr-cat{font-size:11px;color:var(--text-soft);margin-left:6px;font-weight:400}
+  .search-result .sr-snippet{font-size:12px;color:var(--text-soft);margin-top:2px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;word-break:break-all}
+  .search-result mark{background:rgba(255,200,0,.45);color:inherit;border-radius:3px;padding:0 1px}
+  [data-theme="dark"] .search-result mark{background:rgba(255,200,0,.3)}
+  .search-empty{padding:10px;font-size:13px;color:var(--text-soft)}
+
+  /* 标签云 */
+  .tag-title{font-size:12px;font-weight:700;color:var(--text-soft);padding:2px 4px 6px}
+  .tag-list{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+  .tag{border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:12px;padding:2px 8px;border-radius:999px;cursor:pointer;transition:var(--tt),transform .1s}
+  .tag:hover{border-color:var(--accent)}
+  .tag span{margin-left:4px;color:var(--text-soft);font-size:11px}
+  .tag.active{background:var(--accent-soft);color:var(--accent);border-color:var(--accent);font-weight:600}
+  .tag-clear{display:block;margin:0 0 10px;border:none;background:none;color:var(--accent);font-size:12px;cursor:pointer;padding:0}
+  .tag-badge{background:var(--bg-soft);border:1px solid var(--border);color:var(--text-soft);padding:1px 8px;border-radius:999px;font-size:11px}
+
   .nav-group{margin-bottom:6px}
   .nav-group-title{display:flex;align-items:center;gap:6px;padding:8px 10px;font-size:13px;font-weight:700;color:var(--text-soft);cursor:pointer;user-select:none;border-radius:8px}
   .nav-group-title:hover{background:var(--border)}
-  .nav-group-title .caret{display:inline-block;transition:transform .2s;font-size:10px}
+  .nav-group-title .caret{display:inline-block;transition:var(--tt),transform .2s;font-size:10px}
   .nav-group.collapsed .caret{transform:rotate(-90deg)}
   .nav-group.collapsed .nav-items{display:none}
   .nav-group-title .count{margin-left:auto;font-size:11px;background:var(--border);color:var(--text-soft);padding:1px 7px;border-radius:999px}
@@ -55,10 +91,26 @@
   .hero{text-align:center;padding:48px 0 24px}.hero h1{font-size:40px;margin:0 0 12px}
   .hero p{color:var(--text-soft);font-size:16px;margin:0 0 32px}
   .card-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-top:24px}
-  .card{border:1px solid var(--border);border-radius:12px;padding:20px;background:var(--bg-soft);text-align:left;transition:.2s;cursor:pointer}
+  .card{border:1px solid var(--border);border-radius:12px;padding:20px;background:var(--bg-soft);text-align:left;transition:var(--tt),transform .2s ease;cursor:pointer}
   .card:hover{transform:translateY(-2px);border-color:var(--accent)}
   .card .card-icon{font-size:24px}.card h3{margin:10px 0 6px;font-size:17px}
   .card p{margin:0;font-size:14px;color:var(--text-soft)}
+
+  /* TOC */
+  .toc{margin:0 0 24px;border:1px solid var(--border);border-radius:10px;background:var(--bg-soft);font-size:13px;overflow:hidden}
+  .toc-head{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;cursor:pointer;font-weight:700;color:var(--text-soft);user-select:none}
+  .toc.collapsed .toc-list{display:none}
+  .toc-list{list-style:none;margin:0;padding:0 8px 8px;max-height:calc(100vh - 200px);overflow-y:auto}
+  .toc-list a{display:block;padding:3px 8px;border-radius:6px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .toc-list a:hover{background:var(--border);text-decoration:none}
+  .toc-list a.active{color:var(--accent);background:var(--accent-soft);font-weight:600}
+  .toc-list .toc-l3{padding-left:18px}
+  .toc-list .toc-l4{padding-left:32px}
+  @media (min-width:1600px){
+    .toc{position:fixed;right:16px;top:76px;width:200px;max-height:calc(100vh - 100px);margin:0;z-index:10}
+    .toc.collapsed .toc-list{display:block}
+  }
+
   .md h1,.md h2,.md h3,.md h4{line-height:1.3;margin-top:1.6em;margin-bottom:.6em}
   .md h1{font-size:2em;border-bottom:1px solid var(--border);padding-bottom:.3em}
   .md h2{font-size:1.5em;border-bottom:1px solid var(--border);padding-bottom:.3em}
@@ -75,7 +127,7 @@
   .md hr{border:none;border-top:1px solid var(--border);margin:2em 0}
   .md .katex-display{overflow-x:auto;overflow-y:hidden;margin:1em 0;text-align:center}
   .article-title{font-size:28px;margin:0 0 4px;font-weight:700}
-  .article-meta{font-size:13px;color:var(--text-soft);margin-bottom:24px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+  .article-meta{font-size:13px;color:var(--text-soft);margin-bottom:24px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
   .badge{background:var(--accent-soft);color:var(--accent);padding:2px 10px;border-radius:999px;font-size:12px;font-weight:600}
   .loading{color:var(--text-soft);padding:60px 0;text-align:center}
   .loading::before{content:"";display:inline-block;width:14px;height:14px;margin-right:8px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;vertical-align:-2px;animation:spin .8s linear infinite}
@@ -85,7 +137,18 @@
   [data-theme="dark"] .error{background:#3d1d1f;color:#ff8182;border-color:#6b2b2f}
   [data-theme="dark"] .error code{background:rgba(255,255,255,.08)}
   .backdrop{display:none;position:fixed;inset:56px 0 0 0;background:rgba(0,0,0,.4);z-index:40}
-  @media (max-width:860px){.menu-btn{display:inline-block}aside{position:fixed;top:56px;left:0;bottom:0;z-index:45;transform:translateX(-100%);transition:transform .25s ease;height:calc(100vh - 56px);box-shadow:0 0 24px rgba(0,0,0,.15)}aside.open{transform:translateX(0)}.backdrop.show{display:block}main{padding:24px 20px 60px}.hero h1{font-size:30px}}
+
+  /* 快捷键帮助 */
+  .help-overlay{display:none;position:fixed;inset:0;z-index:80;background:rgba(0,0,0,.45);align-items:center;justify-content:center;padding:20px}
+  .help-overlay.show{display:flex}
+  .help-card{background:var(--bg);border:1px solid var(--border);border-radius:14px;padding:20px 24px;max-width:420px;width:100%;box-shadow:0 20px 50px rgba(0,0,0,.3)}
+  .help-card h3{margin:0 0 12px;font-size:16px}
+  .help-card table{width:100%;border-collapse:collapse;font-size:13px}
+  .help-card td{padding:6px 4px;border-bottom:1px solid var(--border)}
+  .help-card td:first-child{width:110px}
+  .help-card kbd{background:var(--bg-soft);border:1px solid var(--border);border-bottom-width:2px;border-radius:6px;padding:1px 7px;font-family:inherit;font-size:12px}
+
+  @media (max-width:860px){.menu-btn{display:inline-block}aside{position:fixed;top:56px;left:0;bottom:0;z-index:45;transform:translateX(-100%);transition:var(--tt),transform .25s ease;height:calc(100vh - 56px);box-shadow:0 0 24px rgba(0,0,0,.15)}aside.open{transform:translateX(0)}.backdrop.show{display:block}main{padding:24px 20px 60px}.hero h1{font-size:30px}}
 </style>
 </head>
 <body>
@@ -95,35 +158,54 @@
   <div class="brand"><span class="logo">OI</span> OI Docs</div>
   <div class="spacer"></div>
   <button class="btn" id="refreshBtn" title="同步">⟳ 同步</button>
-  <button class="btn" id="themeBtn" title="主题">🌓</button>
+  <button class="btn" id="themeBtn" title="主题 (t)">🌓</button>
 </header>
 
 <div class="layout">
   <aside id="sidebar">
-    <input class="search" id="search" type="search" placeholder="搜索文档…" autocomplete="off">
+    <div class="search-wrap">
+      <input class="search" id="search" type="search" placeholder="搜索文档… ( / )" autocomplete="off">
+      <div class="search-results" id="searchResults"></div>
+    </div>
+    <div id="tagCloud"></div>
     <nav id="nav"></nav>
   </aside>
   <div class="backdrop" id="backdrop"></div>
   <main><div id="content"></div></main>
 </div>
 
+<div class="help-overlay" id="helpOverlay">
+  <div class="help-card">
+    <h3>快捷键</h3>
+    <table>
+      <tr><td><kbd>/</kbd></td><td>聚焦搜索</td></tr>
+      <tr><td><kbd>↑</kbd> <kbd>↓</kbd> <kbd>Enter</kbd></td><td>搜索结果选择 / 打开</td></tr>
+      <tr><td><kbd>Esc</kbd></td><td>关闭面板 / 取消聚焦</td></tr>
+      <tr><td><kbd>t</kbd></td><td>切换主题</td></tr>
+      <tr><td><kbd>g</kbd> <kbd>h</kbd></td><td>回到首页</td></tr>
+      <tr><td><kbd>?</kbd></td><td>显示本帮助</td></tr>
+    </table>
+  </div>
+</div>
+
 <script type="module">
 /* ================================================================
- * 1. 稳定 ESM 导入
+ * 1. ESM 导入
  * ================================================================ */
 import markdownit from 'https://esm.sh/markdown-it@14.1.0';
 import markdownItKatex from 'https://esm.sh/@vscode/markdown-it-katex@1.1.2';
 import hljs from 'https://esm.sh/highlight.js@11.9.0';
 
 /* ================================================================
- * 2. ⚠️ 必改配置
+ * 2. 配置
  * ================================================================ */
 const CONFIG = {
-  owner:  'lcd-xvii',   // ← 改成你的 GitHub 用户名
-  repo:   'oi-docs',         // ← 改成你的仓库名
-  branch: 'main',                   // ← 通常 'main' 或 'master'
-  contentRoot: '',                  // ← 若 index.html 在 docs/ 里，填 'docs'
+  owner:  'lcd-xvii',
+  repo:   'oi-docs',
+  branch: 'main',
+  contentRoot: '',
   treeCacheTTL: 10 * 60 * 1000,
+  docCacheTTL:  24 * 60 * 60 * 1000,
 };
 
 const CATEGORY_META = {
@@ -134,14 +216,11 @@ const CATEGORY_META = {
 };
 
 /* ================================================================
- * 3. Markdown 引擎
+ * 3. Markdown
  * ================================================================ */
 const md = markdownit({
-  html: true,
-  linkify: true,
-  typographer: true,
-  breaks: false,
-  highlight: function (str, lang) {
+  html: true, linkify: true, typographer: true, breaks: false,
+  highlight(str, lang) {
     if (lang && hljs.getLanguage(lang)) {
       try {
         return '<pre class="hljs"><code>' +
@@ -167,14 +246,68 @@ const encodePath = p => p.split('/').map(encodeURIComponent).join('/');
 const resolvePath = (dir, rel) => { const out=[]; (dir+rel).split('/').forEach(p=>{if(!p||p==='.')return;if(p==='..')out.pop();else out.push(p);}); return out.join('/'); };
 
 /* ================================================================
- * 5. GitHub API
+ * 5. IndexedDB
+ * ================================================================ */
+const idb = (() => {
+  let dbp = null;
+  function open() {
+    if (dbp) return dbp;
+    dbp = new Promise((res, rej) => {
+      const req = indexedDB.open('oi-docs', 1);
+      req.onupgradeneeded = () => {
+        const db = req.result;
+        if (!db.objectStoreNames.contains('docs')) db.createObjectStore('docs');
+        if (!db.objectStoreNames.contains('meta')) db.createObjectStore('meta');
+      };
+      req.onsuccess = () => res(req.result);
+      req.onerror = () => rej(req.error);
+    });
+    return dbp;
+  }
+  async function get(store, key) {
+    try {
+      const db = await open();
+      return await new Promise((res, rej) => {
+        const r = db.transaction(store, 'readonly').objectStore(store).get(key);
+        r.onsuccess = () => res(r.result);
+        r.onerror = () => rej(r.error);
+      });
+    } catch { return null; }
+  }
+  async function set(store, key, val) {
+    try {
+      const db = await open();
+      await new Promise((res, rej) => {
+        const tx = db.transaction(store, 'readwrite');
+        tx.objectStore(store).put(val, key);
+        tx.oncomplete = () => res();
+        tx.onerror = () => rej(tx.error);
+      });
+    } catch {}
+  }
+  async function clear(store) {
+    try {
+      const db = await open();
+      await new Promise((res, rej) => {
+        const tx = db.transaction(store, 'readwrite');
+        tx.objectStore(store).clear();
+        tx.oncomplete = () => res();
+        tx.onerror = () => rej(tx.error);
+      });
+    } catch {}
+  }
+  return { get, set, clear };
+})();
+
+/* ================================================================
+ * 6. 数据获取
  * ================================================================ */
 async function fetchTree(force = false) {
   if (!force) {
     try {
       const cached = JSON.parse(localStorage.getItem(CACHE_KEY) || 'null');
       if (cached && Date.now() - cached.time < CONFIG.treeCacheTTL) return cached.data;
-    } catch (e) {}
+    } catch {}
   }
   const headers = { 'Accept': 'application/vnd.github+json' };
   const tryBranch = async branch => fetch(`${API_BASE}/git/trees/${branch}?recursive=1`, { headers });
@@ -190,16 +323,54 @@ async function fetchTree(force = false) {
   return data;
 }
 
-async function fetchMarkdown(relPath) {
-  const res = await fetch(RAW_BASE + encodePath(ROOT + relPath), { cache: 'no-cache' });
-  if (!res.ok) throw new Error(`HTTP ${res.status} — ${relPath}`);
-  return await res.text();
+async function fetchMarkdown(path) {
+  const cached = await idb.get('docs', path);
+  if (cached && Date.now() - cached.time < CONFIG.docCacheTTL) return cached.text;
+  const res = await fetch(RAW_BASE + encodePath(ROOT + path), { cache: 'no-cache' });
+  if (!res.ok) {
+    if (cached) return cached.text; // 降级：用旧缓存
+    throw new Error(`HTTP ${res.status} — ${path}`);
+  }
+  const text = await res.text();
+  idb.set('docs', path, { text, time: Date.now() });
+  return text;
+}
+
+async function loadManifest(force = false) {
+  if (!force) {
+    const cached = await idb.get('meta', 'manifest');
+    if (cached && Date.now() - cached.time < CONFIG.treeCacheTTL) return cached.data;
+  }
+  const res = await fetch(RAW_BASE + 'manifest.json', { cache: 'no-cache' });
+  if (!res.ok) throw new Error('manifest.json 不存在');
+  const data = await res.json();
+  idb.set('meta', 'manifest', { data, time: Date.now() });
+  return data;
+}
+
+async function loadSearchIndex() {
+  if (SEARCH_INDEX) return SEARCH_INDEX;
+  const cached = await idb.get('meta', 'search-index');
+  if (cached && Date.now() - cached.time < CONFIG.treeCacheTTL) {
+    SEARCH_INDEX = cached.data;
+    return SEARCH_INDEX;
+  }
+  const res = await fetch(RAW_BASE + 'search-index.json', { cache: 'no-cache' });
+  if (!res.ok) throw new Error('search-index.json 不存在');
+  SEARCH_INDEX = await res.json();
+  idb.set('meta', 'search-index', { data: SEARCH_INDEX, time: Date.now() });
+  return SEARCH_INDEX;
 }
 
 /* ================================================================
- * 6. 分类构建
+ * 7. 构建分类
  * ================================================================ */
 let CATEGORIES = [];
+let MANIFEST = null;
+let SEARCH_INDEX = null;
+let ITEM_MAP = new Map();
+let activeTag = null;
+let currentPath = null;
 let treeLoaded = false;
 
 function buildDocs(tree) {
@@ -216,41 +387,95 @@ function buildDocs(tree) {
     const catName = parts.length === 1 ? '杂项' : parts[0];
     const title = parts[parts.length - 1].replace(/\.md$/i, '');
     if (!groups.has(catName)) groups.set(catName, []);
-    groups.get(catName).push({ path, title });
+    groups.get(catName).push({ path, title, tags: [], date: '', summary: '' });
   }
+  return finalizeCategories(groups);
+}
+
+function buildFromManifest(manifest) {
+  const groups = new Map();
+  for (const d of manifest.docs || []) {
+    if (ROOT && !d.path.startsWith(ROOT)) continue;
+    const path = ROOT ? d.path.slice(ROOT.length) : d.path;
+    const parts = path.split('/');
+    const catName = parts.length === 1 ? '杂项' : parts[0];
+    if (!groups.has(catName)) groups.set(catName, []);
+    groups.get(catName).push({
+      path,
+      title: d.title || parts[parts.length - 1].replace(/\.md$/i, ''),
+      tags: Array.isArray(d.tags) ? d.tags : [],
+      date: d.date || '',
+      summary: d.summary || '',
+    });
+  }
+  return finalizeCategories(groups);
+}
+
+function finalizeCategories(groups) {
   const arr = [...groups.entries()].map(([name, items]) => {
     const meta = CATEGORY_META[name] || {};
-    return { name, icon: meta.icon || '📁', order: meta.order ?? 500,
-      items: items.sort((a, b) => a.title.localeCompare(b.title, 'zh-CN')), collapsed: false };
+    items.sort((a, b) =>
+      (b.date || '').localeCompare(a.date || '') ||
+      a.title.localeCompare(b.title, 'zh-CN'));
+    return { name, icon: meta.icon || '📁', order: meta.order ?? 500, items, collapsed: false };
   });
   arr.sort((a, b) => a.order - b.order || a.name.localeCompare(b.name, 'zh-CN'));
   return arr;
 }
 
+function rebuildItemMap() {
+  ITEM_MAP = new Map();
+  for (const c of CATEGORIES) for (const it of c.items) ITEM_MAP.set(it.path, { ...it, cat: c.name });
+}
+
 /* ================================================================
- * 7. 侧边栏
+ * 8. 侧边栏 + 标签云
  * ================================================================ */
 function renderSidebar(keyword = '') {
   const q = keyword.trim().toLowerCase();
-  const current = parseHash().path;
   let html = '';
   CATEGORIES.forEach((cat, ci) => {
-    const items = q ? cat.items.filter(it => it.title.toLowerCase().includes(q) || cat.name.toLowerCase().includes(q)) : cat.items;
-    if (q && items.length === 0) return;
-    const collapsed = (cat.collapsed && !q) ? ' collapsed' : '';
+    let items = cat.items;
+    if (activeTag) items = items.filter(it => (it.tags || []).includes(activeTag));
+    if (q) items = items.filter(it => it.title.toLowerCase().includes(q) || cat.name.toLowerCase().includes(q));
+    if ((q || activeTag) && items.length === 0) return;
+    const filtering = q || activeTag;
+    const collapsed = (cat.collapsed && !filtering) ? ' collapsed' : '';
     html += `<div class="nav-group${collapsed}" data-cat="${ci}">
       <div class="nav-group-title"><span class="caret">▼</span><span>${cat.icon} ${escapeHtml(cat.name)}</span><span class="count">${items.length}/${cat.items.length}</span></div>
       <ul class="nav-items">`;
     if (items.length === 0) html += `<li class="nav-empty">空</li>`;
     else items.forEach(it => {
-      const active = it.path === current ? ' active' : '';
+      const active = it.path === currentPath ? ' active' : '';
       html += `<li><a href="#${escapeHtml(encodeURIComponent(it.path))}" class="${active.trim()}" data-path="${escapeHtml(it.path)}" title="${escapeHtml(it.path)}">${escapeHtml(it.title)}</a></li>`;
     });
     html += `</ul></div>`;
   });
-  if (!html) html = `<div class="nav-empty">${treeLoaded ? '没有找到 .md 文档' : '正在读取仓库…'}</div>`;
+  if (!html) html = `<div class="nav-empty">${treeLoaded ? (activeTag ? '该标签下没有文档' : '没有找到 .md 文档') : '正在读取仓库…'}</div>`;
   $('#nav').innerHTML = html;
 }
+
+function renderTags() {
+  const el = $('#tagCloud');
+  if (!MANIFEST) { el.innerHTML = ''; return; }
+  const counts = new Map();
+  for (const cat of CATEGORIES) for (const it of cat.items) for (const t of (it.tags || [])) counts.set(t, (counts.get(t) || 0) + 1);
+  if (!counts.size) { el.innerHTML = ''; return; }
+  const tags = [...counts.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'zh-CN'));
+  el.innerHTML = `<div class="tag-title">标签</div><div class="tag-list">${tags.map(([t, n]) =>
+    `<button class="tag${t === activeTag ? ' active' : ''}" data-tag="${escapeHtml(t)}">${escapeHtml(t)}<span>${n}</span></button>`).join('')}</div>` +
+    (activeTag ? `<button class="tag-clear" id="tagClear">清除筛选</button>` : '');
+}
+
+$('#tagCloud').addEventListener('click', e => {
+  if (e.target.closest('#tagClear')) { activeTag = null; renderTags(); renderSidebar($('#search').value); return; }
+  const btn = e.target.closest('.tag');
+  if (!btn) return;
+  const t = btn.dataset.tag;
+  activeTag = activeTag === t ? null : t;
+  renderTags();
+  renderSidebar($('#search').value);
+});
 
 $('#nav').addEventListener('click', e => {
   const t = e.target.closest('.nav-group-title');
@@ -259,41 +484,45 @@ $('#nav').addEventListener('click', e => {
   group.classList.toggle('collapsed');
   CATEGORIES[+group.dataset.cat].collapsed = group.classList.contains('collapsed');
 });
-$('#search').addEventListener('input', e => renderSidebar(e.target.value));
 
 /* ================================================================
- * 8. 路由
+ * 9. 路由
  * ================================================================ */
 function parseHash() {
   let h = location.hash.slice(1);
   if (!h) return { path: null, anchor: null };
-  try { h = decodeURIComponent(h); } catch (e) {}
+  try { h = decodeURIComponent(h); } catch {}
   const i = h.indexOf('#');
   return i === -1 ? { path: h, anchor: null } : { path: h.slice(0, i), anchor: h.slice(i + 1) };
 }
-function navigate(path, anchor) {
-  const hash = encodeURIComponent(path) + (anchor ? '#' + anchor : '');
-  if (location.hash.slice(1) === hash) onHashChange(); else location.hash = hash;
+
+function scrollToAnchor(anchor) {
+  const el = document.getElementById(anchor) || document.querySelector(`.md [id="${CSS.escape(anchor)}"]`);
+  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 /* ================================================================
- * 9. 欢迎页 / 文档渲染
+ * 10. 欢迎页 / 文档
  * ================================================================ */
 function renderWelcome() {
+  currentPath = null;
   document.title = 'OI Docs';
   const cards = CATEGORIES.map((c, i) =>
     `<div class="card" data-cat="${i}"><div class="card-icon">${c.icon}</div><h3>${escapeHtml(c.name)}</h3><p>${c.items.length} 篇文档</p></div>`
   ).join('');
   $('#content').innerHTML = `<div class="article"><div class="hero"><h1>OI Docs</h1><p>题解 · 总结 · 算法理论</p></div><div class="card-grid">${cards || '<div class="nav-empty">还没有文档</div>'}</div></div>`;
 }
+
 $('#content').addEventListener('click', e => {
   const card = e.target.closest('.card');
   if (!card) return;
   const cat = CATEGORIES[+card.dataset.cat];
-  if (cat?.items[0]) navigate(cat.items[0].path);
+  if (cat?.items[0]) location.hash = encodeURIComponent(cat.items[0].path);
 });
 
-function showError(html) { $('#content').innerHTML = `<div class="article"><div class="error">${html}</div></div>`; }
+function showError(html) {
+  $('#content').innerHTML = `<div class="article"><div class="error">${html}</div></div>`;
+}
 
 function fixLinks(root, mdPath) {
   const dir = mdPath.includes('/') ? mdPath.slice(0, mdPath.lastIndexOf('/') + 1) : '';
@@ -305,7 +534,7 @@ function fixLinks(root, mdPath) {
     const [rawPath, anchor] = href.split('#');
     if (/\.md$/i.test(rawPath)) {
       const target = resolvePath(dir, rawPath);
-      const isInternal = CATEGORIES.some(c => c.items.some(it => it.path === target));
+      const isInternal = ITEM_MAP.has(target);
       if (isInternal) a.setAttribute('href', '#' + encodeURIComponent(target) + (anchor ? '#' + anchor : ''));
       else { a.setAttribute('href', `https://github.com/${CONFIG.owner}/${CONFIG.repo}/blob/${CONFIG.branch}/` + encodePath(ROOT + target) + (anchor ? '#' + anchor : '')); a.target = '_blank'; }
     } else {
@@ -328,26 +557,73 @@ function addHeadingIds(root) {
   });
 }
 
+/* ---------- TOC ---------- */
+let tocScrollHandler = null;
+let tocRaf = 0;
+
+function setupTOC(mdRoot, path) {
+  const toc = document.getElementById('toc');
+  if (!toc) return;
+  const heads = [...mdRoot.querySelectorAll('h1[id],h2[id],h3[id],h4[id]')];
+  if (heads.length < 2) { toc.remove(); return; }
+
+  const list = heads.map(h => {
+    const lvl = +h.tagName[1];
+    return `<li class="toc-l${lvl}"><a href="#${encodeURIComponent(path)}#${encodeURIComponent(h.id)}" data-id="${escapeHtml(h.id)}">${escapeHtml(h.textContent.trim())}</a></li>`;
+  }).join('');
+
+  toc.innerHTML = `<div class="toc-head" id="tocHead"><span>目录</span><span>▾</span></div><ul class="toc-list">${list}</ul>`;
+  $('#tocHead').addEventListener('click', () => toc.classList.toggle('collapsed'));
+
+  if (tocScrollHandler) window.removeEventListener('scroll', tocScrollHandler);
+  const update = () => {
+    let activeId = heads[0].id;
+    for (const h of heads) {
+      if (h.getBoundingClientRect().top < 100) activeId = h.id; else break;
+    }
+    toc.querySelectorAll('a').forEach(a => a.classList.toggle('active', a.dataset.id === activeId));
+  };
+  tocScrollHandler = () => {
+    if (tocRaf) return;
+    tocRaf = requestAnimationFrame(() => { tocRaf = 0; update(); });
+  };
+  window.addEventListener('scroll', tocScrollHandler, { passive: true });
+  update();
+}
+
+/* ---------- 打开文档 ---------- */
 async function openDoc(path, anchor) {
   closeSidebar();
-  const cat = CATEGORIES.find(c => c.items.some(it => it.path === path));
-  const item = cat?.items.find(it => it.path === path);
-  document.querySelectorAll('.nav-items a').forEach(a => a.classList.toggle('active', a.dataset.path === path));
+  hideSearchResults();
+  const item = ITEM_MAP.get(path);
   if (!item) { showError(`未找到文档：<code>${escapeHtml(path)}</code>`); return; }
+
+  document.querySelectorAll('.nav-items a').forEach(a => a.classList.toggle('active', a.dataset.path === path));
   $('#content').innerHTML = `<div class="article"><div class="loading">正在加载 ${escapeHtml(item.title)}…</div></div>`;
   window.scrollTo(0, 0);
+
   try {
     const text = await fetchMarkdown(path);
     const html = md.render(text);
-    $('#content').innerHTML = `<div class="article"><h1 class="article-title">${escapeHtml(item.title)}</h1><div class="article-meta"><span class="badge">${escapeHtml(cat.name)}</span><span>${escapeHtml(path)}</span></div><div class="md">${html}</div></div>`;
+    const tagsHtml = (item.tags || []).map(t => `<span class="tag-badge">${escapeHtml(t)}</span>`).join('');
+    $('#content').innerHTML = `<div class="article">
+      <h1 class="article-title">${escapeHtml(item.title)}</h1>
+      <div class="article-meta">
+        <span class="badge">${escapeHtml(item.cat)}</span>
+        <span>${escapeHtml(path)}</span>
+        ${tagsHtml}
+      </div>
+      <div class="toc collapsed" id="toc"></div>
+      <div class="md">${html}</div>
+    </div>`;
+
     const mdRoot = $('#content .md');
     fixLinks(mdRoot, path);
     addHeadingIds(mdRoot);
+    setupTOC(mdRoot, path);
+    currentPath = path;
     document.title = `${item.title} · OI Docs`;
-    if (anchor) {
-      const el = document.getElementById(anchor) || mdRoot.querySelector(`[id="${CSS.escape(anchor)}"]`);
-      if (el) setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
-    }
+    if (anchor) setTimeout(() => scrollToAnchor(anchor), 50);
   } catch (err) {
     showError(`<strong>无法加载文档</strong><br>路径：<code>${escapeHtml(path)}</code><br>原因：${escapeHtml(err.message || String(err))}<br><small>请确认文件存在、配置正确，并通过 http(s) 访问页面。</small>`);
   }
@@ -355,48 +631,241 @@ async function openDoc(path, anchor) {
 
 async function onHashChange() {
   const { path, anchor } = parseHash();
-  if (path) await openDoc(path, anchor); else renderWelcome();
+  if (path && path === currentPath) {
+    if (anchor) scrollToAnchor(anchor);
+    return;
+  }
+  if (path) await openDoc(path, anchor);
+  else renderWelcome();
 }
 
 /* ================================================================
- * 10. 交互
+ * 11. 全文搜索
  * ================================================================ */
-const sidebar = $('#sidebar'); const backdrop = $('#backdrop');
+let searchResults = [];
+let searchSel = -1;
+let searchTimer = null;
+
+function highlight(snippet, q) {
+  const s = escapeHtml(snippet);
+  const qe = escapeHtml(q).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  if (!qe) return s;
+  return s.replace(new RegExp(qe, 'gi'), m => '<mark>' + m + '</mark>');
+}
+
+function searchDocs(q) {
+  q = q.trim().toLowerCase();
+  if (!q) return [];
+  const titleHits = [];
+  const seen = new Set();
+  for (const [path, item] of ITEM_MAP) {
+    if (item.title.toLowerCase().includes(q)) {
+      titleHits.push({ path, title: item.title, cat: item.cat, anchor: null, snippet: '' });
+      seen.add(path);
+    }
+  }
+  const contentHits = [];
+  if (SEARCH_INDEX) {
+    for (const doc of SEARCH_INDEX) {
+      const item = ITEM_MAP.get(doc.path);
+      if (!item || seen.has(doc.path)) continue;
+      for (const sec of (doc.sections || [])) {
+        const i = sec.text.toLowerCase().indexOf(q);
+        if (i === -1) continue;
+        const start = Math.max(0, i - 30);
+        const end = Math.min(sec.text.length, i + q.length + 50);
+        const snippet = (start > 0 ? '…' : '') + sec.text.slice(start, end).replace(/\s+/g, ' ').trim() + (end < sec.text.length ? '…' : '');
+        contentHits.push({ path: doc.path, title: item.title, cat: item.cat, anchor: sec.id || null, snippet });
+        break; // 每篇最多一条正文命中
+      }
+      if (contentHits.length >= 30) break;
+    }
+  }
+  return [...titleHits, ...contentHits].slice(0, 40);
+}
+
+function positionSearchPanel() {
+  const input = $('#search');
+  const panel = $('#searchResults');
+  const r = input.getBoundingClientRect();
+  panel.style.left = r.left + 'px';
+  panel.style.top = (r.bottom + 6) + 'px';
+  panel.style.width = Math.max(r.width, 260) + 'px';
+}
+
+function renderSearchResults(q) {
+  const box = $('#searchResults');
+  if (!searchResults.length) {
+    box.innerHTML = `<div class="search-empty">没有结果</div>`;
+  } else {
+    box.innerHTML = searchResults.map((r, i) => `
+      <a class="search-result${i === searchSel ? ' sel' : ''}" data-i="${i}"
+         href="#${encodeURIComponent(r.path)}${r.anchor ? '#' + encodeURIComponent(r.anchor) : ''}">
+        <div class="sr-title">${highlight(r.title, q)}<span class="sr-cat">${escapeHtml(r.cat)}</span></div>
+        ${r.snippet ? `<div class="sr-snippet">${highlight(r.snippet, q)}</div>` : ''}
+      </a>`).join('');
+  }
+  positionSearchPanel();
+  box.classList.add('show');
+}
+
+function hideSearchResults() {
+  $('#searchResults').classList.remove('show');
+  searchResults = [];
+  searchSel = -1;
+}
+
+function updateSearchSel() {
+  $('#searchResults').querySelectorAll('.search-result').forEach((el, i) => {
+    el.classList.toggle('sel', i === searchSel);
+    if (i === searchSel) el.scrollIntoView({ block: 'nearest' });
+  });
+}
+
+function goResult(r) {
+  hideSearchResults();
+  $('#search').blur();
+  location.hash = encodeURIComponent(r.path) + (r.anchor ? '#' + r.anchor : '');
+}
+
+$('#search').addEventListener('input', e => {
+  const q = e.target.value;
+  renderSidebar(q);
+  clearTimeout(searchTimer);
+  searchSel = -1;
+  if (!q.trim()) { hideSearchResults(); return; }
+  searchTimer = setTimeout(async () => {
+    if (MANIFEST) { try { await loadSearchIndex(); } catch {} }
+    searchResults = searchDocs(q);
+    renderSearchResults(q);
+  }, 200);
+});
+
+$('#search').addEventListener('keydown', e => {
+  if (e.key === 'Escape') { hideSearchResults(); e.target.blur(); return; }
+  if (!searchResults.length) return;
+  if (e.key === 'ArrowDown') { e.preventDefault(); searchSel = Math.min(searchSel + 1, searchResults.length - 1); updateSearchSel(); }
+  else if (e.key === 'ArrowUp') { e.preventDefault(); searchSel = Math.max(searchSel - 1, 0); updateSearchSel(); }
+  else if (e.key === 'Enter') {
+    if (searchSel >= 0) { e.preventDefault(); goResult(searchResults[searchSel]); }
+    else if (searchResults[0]) { e.preventDefault(); goResult(searchResults[0]); }
+  }
+});
+
+$('#searchResults').addEventListener('click', e => {
+  const a = e.target.closest('.search-result');
+  if (a) { hideSearchResults(); $('#search').blur(); }
+});
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('.search-wrap')) hideSearchResults();
+});
+
+window.addEventListener('resize', () => {
+  if ($('#searchResults').classList.contains('show')) positionSearchPanel();
+});
+window.addEventListener('scroll', () => {
+  if ($('#searchResults').classList.contains('show')) positionSearchPanel();
+}, { passive: true });
+
+/* ================================================================
+ * 12. 快捷键
+ * ================================================================ */
+let gPressedAt = 0;
+const helpOverlay = $('#helpOverlay');
+function toggleHelp(force) {
+  const show = force ?? !helpOverlay.classList.contains('show');
+  helpOverlay.classList.toggle('show', show);
+}
+helpOverlay.addEventListener('click', e => { if (e.target === helpOverlay) toggleHelp(false); });
+
+document.addEventListener('keydown', e => {
+  const t = e.target;
+  const typing = t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable);
+
+  if (e.key === 'Escape') {
+    if (helpOverlay.classList.contains('show')) { toggleHelp(false); return; }
+    hideSearchResults();
+    closeSidebar();
+    if (typing) t.blur();
+    return;
+  }
+  if (typing) return;
+
+  if (e.key === '/') { e.preventDefault(); $('#search').focus(); return; }
+  if (e.key === '?') { e.preventDefault(); toggleHelp(); return; }
+  if (e.key === 't') { toggleTheme(); return; }
+  if (e.key === 'g') { gPressedAt = Date.now(); return; }
+  if (e.key === 'h' && Date.now() - gPressedAt < 800) {
+    gPressedAt = 0;
+    location.hash = '';
+  }
+});
+
+/* ================================================================
+ * 13. 主题 / 侧栏
+ * ================================================================ */
+const sidebar = $('#sidebar');
+const backdrop = $('#backdrop');
 function closeSidebar() { sidebar.classList.remove('open'); backdrop.classList.remove('show'); }
 $('#menuBtn').addEventListener('click', () => { sidebar.classList.toggle('open'); backdrop.classList.toggle('show'); });
 backdrop.addEventListener('click', closeSidebar);
 
-/* 主题：data-theme 已在 <head> 内联脚本里提前确定，这里只负责切换与同步 hljs 样式表 */
 const hljsLight = document.getElementById('hljs-light');
 const hljsDark  = document.getElementById('hljs-dark');
-function applyHljsTheme(theme){
+function applyHljsTheme(theme) {
   if (hljsLight) hljsLight.disabled = theme === 'dark';
   if (hljsDark)  hljsDark.disabled  = theme !== 'dark';
 }
-applyHljsTheme(document.documentElement.dataset.theme);
+function setTheme(theme, persist) {
+  document.documentElement.dataset.theme = theme;
+  applyHljsTheme(theme);
+  if (persist) localStorage.setItem('oi-docs-theme', theme);
+}
+function toggleTheme() {
+  setTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark', true);
+}
+setTheme(document.documentElement.dataset.theme, false);
+$('#themeBtn').addEventListener('click', toggleTheme);
 
-$('#themeBtn').addEventListener('click', () => {
-  const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
-  document.documentElement.dataset.theme = next;
-  localStorage.setItem('oi-docs-theme', next);
-  applyHljsTheme(next);
-});
+/* ================================================================
+ * 14. 加载 / 同步
+ * ================================================================ */
+async function loadContent() {
+  MANIFEST = null;
+  SEARCH_INDEX = null;
+  try {
+    MANIFEST = await loadManifest();
+    CATEGORIES = buildFromManifest(MANIFEST);
+  } catch {
+    const tree = await fetchTree();
+    CATEGORIES = buildDocs(tree);
+  }
+  treeLoaded = true;
+  rebuildItemMap();
+  renderTags();
+  renderSidebar($('#search').value);
+  await onHashChange();
+}
 
 $('#refreshBtn').addEventListener('click', async () => {
   $('#refreshBtn').disabled = true;
   try {
+    await idb.clear('docs');
+    await idb.clear('meta');
     localStorage.removeItem(CACHE_KEY);
-    const tree = await fetchTree(true);
-    CATEGORIES = buildDocs(tree);
-    treeLoaded = true;
-    renderSidebar($('#search').value);
-    await onHashChange();
-  } catch (err) { showError(`<strong>同步失败</strong><br>${escapeHtml(err.message)}`); }
-  finally { $('#refreshBtn').disabled = false; }
+    currentPath = null;
+    activeTag = null;
+    await loadContent();
+  } catch (err) {
+    showError(`<strong>同步失败</strong><br>${escapeHtml(err.message)}`);
+  } finally {
+    $('#refreshBtn').disabled = false;
+  }
 });
 
 /* ================================================================
- * 11. 启动
+ * 15. 启动
  * ================================================================ */
 async function init() {
   if (!CONFIG.owner || !CONFIG.repo || CONFIG.owner === 'YOUR_GITHUB_USERNAME' || CONFIG.repo === 'YOUR_REPO_NAME') {
@@ -404,14 +873,12 @@ async function init() {
     return;
   }
   renderSidebar();
-  $('#content').innerHTML = `<div class="article"><div class="loading">正在读取仓库文件列表…</div></div>`;
+  $('#content').innerHTML = `<div class="article"><div class="loading">正在读取文档索引…</div></div>`;
   try {
-    const tree = await fetchTree();
-    CATEGORIES = buildDocs(tree);
-    treeLoaded = true;
-    renderSidebar();
-    await onHashChange();
-  } catch (err) { showError(`<strong>初始化失败</strong><br>${escapeHtml(err.message)}`); }
+    await loadContent();
+  } catch (err) {
+    showError(`<strong>初始化失败</strong><br>${escapeHtml(err.message)}`);
+  }
 }
 window.addEventListener('hashchange', onHashChange);
 init();
