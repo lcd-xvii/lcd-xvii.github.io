@@ -6,37 +6,121 @@
 <title>OI Docs</title>
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
-<link id="hljs-light" rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github.min.css">
-<link id="hljs-dark" rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github-dark.min.css" disabled>
+
+<!-- rustdoc 三套官方主题（外部 CSS） -->
+<link id="theme-light" rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/rust-lang/rust@master/src/librustdoc/html/static/css/themes/light.css">
+<link id="theme-dark" rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/rust-lang/rust@master/src/librustdoc/html/static/css/themes/dark.css" disabled>
+<link id="theme-ayu" rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/rust-lang/rust@master/src/librustdoc/html/static/css/themes/ayu.css" disabled>
 
 <script>
 (function () {
   var saved = localStorage.getItem('oi-docs-theme');
-  var dark = saved ? saved === 'dark'
-                   : (window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches);
-  var theme = dark ? 'dark' : 'light';
+  var theme = saved || 'light';
   document.documentElement.dataset.theme = theme;
-  var l = document.getElementById('hljs-light');
-  var d = document.getElementById('hljs-dark');
-  if (l) l.disabled = dark;
-  if (d) d.disabled = !dark;
-
-  var otherHref = dark
-    ? 'https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github.min.css'
-    : 'https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github-dark.min.css';
-  var pre = document.createElement('link');
-  pre.rel = 'preload';
-  pre.as = 'style';
-  pre.href = otherHref;
-  document.head.appendChild(pre);
+  ['light','dark','ayu'].forEach(function (t) {
+    var l = document.getElementById('theme-' + t);
+    if (l) l.disabled = (t !== theme);
+  });
 })();
 </script>
 
 <style>
-  :root{--bg:#fff;--bg-soft:#f6f8fa;--text:#1f2328;--text-soft:#59636e;--border:#d1d9e0;--accent:#0969da;--accent-soft:#ddf4ff;--code-bg:#f6f8fa;--code-block-bg:#f6f8fa;--code-block-fg:#1f2328;--sidebar-w:280px;
-    --tt: background-color .28s ease, color .28s ease, border-color .28s ease, box-shadow .28s ease, fill .28s ease, stroke .28s ease}
-  [data-theme="dark"]{--bg:#0d1117;--bg-soft:#161b22;--text:#e6edf3;--text-soft:#9198a1;--border:#30363d;--accent:#4493f8;--accent-soft:#121d2f;--code-bg:#161b22;--code-block-bg:#0d1117;--code-block-fg:#e6edf3}
+  /* ============================================================
+   * 页面布局变量（rustdoc 主题不覆盖这些，由页面自己维护）
+   * ============================================================ */
+  :root{
+    --sidebar-w:280px;
+    --tt: background-color .28s ease, color .28s ease, border-color .28s ease, box-shadow .28s ease, fill .28s ease, stroke .28s ease;
+  }
 
+  /* ============================================================
+   * 从 rustdoc 主题中提取的配色（light）
+   * 变量名尽量对齐 rustdoc 的命名习惯，实际值取自其 CSS 文件
+   * ============================================================ */
+  :root, [data-theme="light"]{
+    --bg: #ffffff;
+    --bg-soft: #f5f5f5;
+    --text: #000000;
+    --text-soft: #666666;
+    --border: #e0e0e0;
+    --accent: #3873ad;
+    --accent-soft: #eaf2fb;
+    --code-bg: #f5f5f5;
+    --code-block-bg: #f5f5f5;
+    --code-block-fg: #000000;
+    --hl-keyword: #8959a8;
+    --hl-title: #4271ae;
+    --hl-attr: #c82829;
+    --hl-string: #718c00;
+    --hl-builtin: #f5871f;
+    --hl-comment: #8e908c;
+    --hl-name: #4271ae;
+    --hl-subst: #000000;
+    --hl-section: #4271ae;
+    --hl-bullet: #718c00;
+    --hl-emphasis: #000000;
+    --hl-add-fg: #718c00; --hl-add-bg: #eaffea;
+    --hl-del-fg: #c82829; --hl-del-bg: #ffeeee;
+  }
+
+  /* dark */
+  [data-theme="dark"]{
+    --bg: #2a2a2a;
+    --bg-soft: #383838;
+    --text: #dddddd;
+    --text-soft: #999999;
+    --border: #555555;
+    --accent: #76ae4b;
+    --accent-soft: #2d3b2d;
+    --code-bg: #383838;
+    --code-block-bg: #2a2a2a;
+    --code-block-fg: #dddddd;
+    --hl-keyword: #ee6868;
+    --hl-title: #769acb;
+    --hl-attr: #ee6868;
+    --hl-string: #2bab63;
+    --hl-builtin: #ee6868;
+    --hl-comment: #999999;
+    --hl-name: #2bab63;
+    --hl-subst: #dddddd;
+    --hl-section: #769acb;
+    --hl-bullet: #2bab63;
+    --hl-emphasis: #dddddd;
+    --hl-add-fg: #2bab63; --hl-add-bg: #1e3a2a;
+    --hl-del-fg: #ee6868; --hl-del-bg: #3a1e1e;
+  }
+
+  /* ayu */
+  [data-theme="ayu"]{
+    --bg: #0f1419;
+    --bg-soft: #1c2228;
+    --text: #c5c5c5;
+    --text-soft: #8a9199;
+    --border: #2d353e;
+    --accent: #ffb44c;
+    --accent-soft: #2d2415;
+    --code-bg: #1c2228;
+    --code-block-bg: #0f1419;
+    --code-block-fg: #c5c5c5;
+    --hl-keyword: #ff7733;
+    --hl-title: #ffb44c;
+    --hl-attr: #ff7733;
+    --hl-string: #b8cc52;
+    --hl-builtin: #ff7733;
+    --hl-comment: #5c6773;
+    --hl-name: #b8cc52;
+    --hl-subst: #c5c5c5;
+    --hl-section: #ffb44c;
+    --hl-bullet: #b8cc52;
+    --hl-emphasis: #c5c5c5;
+    --hl-add-fg: #b8cc52; --hl-add-bg: #1a2a1a;
+    --hl-del-fg: #ff7733; --hl-del-bg: #2a1a1a;
+  }
+
+  html{background:var(--bg)}
   *,*::before,*::after{transition:var(--tt)}
   *{box-sizing:border-box}html,body{margin:0;padding:0}
   body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);line-height:1.7;font-size:16px}
@@ -52,7 +136,6 @@
   .search{width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font-size:14px;margin-bottom:12px;outline:none}
   .search:focus{border-color:var(--accent)}
 
-  /* 搜索结果浮层（fixed，由 JS 定位） */
   .search-results{display:none;position:fixed;z-index:70;background:var(--bg);border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.18);max-height:60vh;overflow-y:auto}
   .search-results.show{display:block}
   .search-result{display:block;padding:8px 10px;border-bottom:1px solid var(--border);font-size:13px;color:var(--text);cursor:pointer}
@@ -62,10 +145,9 @@
   .search-result .sr-cat{font-size:11px;color:var(--text-soft);margin-left:6px;font-weight:400}
   .search-result .sr-snippet{font-size:12px;color:var(--text-soft);margin-top:2px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;word-break:break-all}
   .search-result mark{background:rgba(255,200,0,.45);color:inherit;border-radius:3px;padding:0 1px}
-  [data-theme="dark"] .search-result mark{background:rgba(255,200,0,.3)}
+  [data-theme="dark"] .search-result mark,[data-theme="ayu"] .search-result mark{background:rgba(255,200,0,.3)}
   .search-empty{padding:10px;font-size:13px;color:var(--text-soft)}
 
-  /* 标签云 */
   .tag-title{font-size:12px;font-weight:700;color:var(--text-soft);padding:2px 4px 6px}
   .tag-list{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
   .tag{border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:12px;padding:2px 8px;border-radius:999px;cursor:pointer;transition:var(--tt),transform .1s}
@@ -96,7 +178,6 @@
   .card .card-icon{font-size:24px}.card h3{margin:10px 0 6px;font-size:17px}
   .card p{margin:0;font-size:14px;color:var(--text-soft)}
 
-  /* TOC */
   .toc{margin:0 0 24px;border:1px solid var(--border);border-radius:10px;background:var(--bg-soft);font-size:13px;overflow:hidden}
   .toc-head{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;cursor:pointer;font-weight:700;color:var(--text-soft);user-select:none}
   .toc.collapsed .toc-list{display:none}
@@ -118,9 +199,41 @@
   .md ul,.md ol{padding-left:1.6em;margin:0 0 1em}.md li{margin:.25em 0}
   .md blockquote{margin:0 0 1em;padding:.5em 1em;border-left:4px solid var(--border);color:var(--text-soft);background:var(--bg-soft);border-radius:0 8px 8px 0}
   .md code{background:var(--code-bg);padding:.15em .4em;border-radius:5px;font-size:.9em;font-family:"JetBrains Mono","Fira Code",Consolas,Menlo,monospace}
-  .md pre{background:var(--code-block-bg);color:var(--code-block-fg);padding:14px 16px;border-radius:10px;overflow-x:auto;margin:0 0 1em;border:1px solid var(--border)}
+  .md pre{position:relative;background:var(--code-block-bg);color:var(--code-block-fg);padding:14px 16px;border-radius:10px;overflow-x:auto;margin:0 0 1em;border:1px solid var(--border)}
   .md pre code{background:transparent;padding:0;color:inherit;font-size:14px;line-height:1.6}
   .md pre code.hljs{background:transparent;padding:0}
+
+  /* highlight.js token 配色 */
+  .hljs{color:inherit}
+  .hljs-keyword,.hljs-doctag,.hljs-template-tag,.hljs-template-variable,.hljs-type,.hljs-variable.language_{color:var(--hl-keyword)}
+  .hljs-title,.hljs-title.class_,.hljs-title.function_{color:var(--hl-title)}
+  .hljs-attr,.hljs-attribute,.hljs-literal,.hljs-meta,.hljs-number,.hljs-operator,.hljs-selector-attr,.hljs-selector-class,.hljs-selector-id,.hljs-variable{color:var(--hl-attr)}
+  .hljs-string,.hljs-regexp{color:var(--hl-string)}
+  .hljs-built_in,.hljs-symbol{color:var(--hl-builtin)}
+  .hljs-comment,.hljs-code,.hljs-formula{color:var(--hl-comment)}
+  .hljs-name,.hljs-quote,.hljs-selector-pseudo,.hljs-selector-tag{color:var(--hl-name)}
+  .hljs-subst{color:var(--hl-subst)}
+  .hljs-section{color:var(--hl-section);font-weight:bold}
+  .hljs-bullet{color:var(--hl-bullet)}
+  .hljs-emphasis{color:var(--hl-emphasis);font-style:italic}
+  .hljs-strong{color:var(--hl-emphasis);font-weight:bold}
+  .hljs-addition{color:var(--hl-add-fg);background-color:var(--hl-add-bg)}
+  .hljs-deletion{color:var(--hl-del-fg);background-color:var(--hl-del-bg)}
+
+  /* ============================================================
+   * 代码块复制按钮
+   * ============================================================ */
+  .copy-btn{
+    position:absolute;top:6px;right:6px;z-index:2;
+    border:1px solid var(--border);background:var(--bg);color:var(--text-soft);
+    font-size:12px;padding:2px 8px;border-radius:6px;cursor:pointer;
+    opacity:0;transition:opacity .15s, var(--tt);
+    font-family:inherit;line-height:1.6;
+  }
+  .md pre:hover .copy-btn{opacity:1}
+  .copy-btn:hover{background:var(--bg-soft);border-color:var(--accent);color:var(--accent)}
+  .copy-btn.copied{color:var(--accent);border-color:var(--accent)}
+
   .md table{border-collapse:collapse;width:100%;margin:0 0 1em;font-size:14px}
   .md th,.md td{border:1px solid var(--border);padding:6px 12px;text-align:left}
   .md th{background:var(--bg-soft)}.md img{max-width:100%;border-radius:8px}
@@ -138,7 +251,6 @@
   [data-theme="dark"] .error code{background:rgba(255,255,255,.08)}
   .backdrop{display:none;position:fixed;inset:56px 0 0 0;background:rgba(0,0,0,.4);z-index:40}
 
-  /* 快捷键帮助 */
   .help-overlay{display:none;position:fixed;inset:0;z-index:80;background:rgba(0,0,0,.45);align-items:center;justify-content:center;padding:20px}
   .help-overlay.show{display:flex}
   .help-card{background:var(--bg);border:1px solid var(--border);border-radius:14px;padding:20px 24px;max-width:420px;width:100%;box-shadow:0 20px 50px rgba(0,0,0,.3)}
@@ -328,7 +440,7 @@ async function fetchMarkdown(path) {
   if (cached && Date.now() - cached.time < CONFIG.docCacheTTL) return cached.text;
   const res = await fetch(RAW_BASE + encodePath(ROOT + path), { cache: 'no-cache' });
   if (!res.ok) {
-    if (cached) return cached.text; // 降级：用旧缓存
+    if (cached) return cached.text;
     throw new Error(`HTTP ${res.status} — ${path}`);
   }
   const text = await res.text();
@@ -557,6 +669,53 @@ function addHeadingIds(root) {
   });
 }
 
+/* ---------- 代码块复制 ---------- */
+function attachCopyButtons(mdRoot) {
+  mdRoot.querySelectorAll('pre').forEach(pre => {
+    if (pre.querySelector('.copy-btn')) return;
+    const code = pre.querySelector('code');
+    if (!code) return;
+    const btn = document.createElement('button');
+    btn.className = 'copy-btn';
+    btn.type = 'button';
+    btn.textContent = '复制';
+    pre.appendChild(btn);
+  });
+}
+
+async function copyText(text) {
+  if (navigator.clipboard?.writeText) {
+    try { await navigator.clipboard.writeText(text); return true; } catch {}
+  }
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.setAttribute('readonly', '');
+  ta.style.position = 'fixed';
+  ta.style.left = '-9999px';
+  document.body.appendChild(ta);
+  ta.select();
+  let ok = false;
+  try { ok = document.execCommand('copy'); } catch {}
+  document.body.removeChild(ta);
+  return ok;
+}
+
+$('#content').addEventListener('click', async e => {
+  const btn = e.target.closest('.copy-btn');
+  if (!btn) return;
+  const code = btn.closest('pre')?.querySelector('code');
+  if (!code) return;
+  const text = code.innerText;
+  const ok = await copyText(text);
+  if (!ok) return;
+  btn.textContent = '已复制';
+  btn.classList.add('copied');
+  setTimeout(() => {
+    btn.textContent = '复制';
+    btn.classList.remove('copied');
+  }, 1500);
+});
+
 /* ---------- TOC ---------- */
 let tocScrollHandler = null;
 let tocRaf = 0;
@@ -591,7 +750,6 @@ function setupTOC(mdRoot, path) {
   update();
 }
 
-/* ---------- 打开文档 ---------- */
 async function openDoc(path, anchor) {
   closeSidebar();
   hideSearchResults();
@@ -620,6 +778,7 @@ async function openDoc(path, anchor) {
     const mdRoot = $('#content .md');
     fixLinks(mdRoot, path);
     addHeadingIds(mdRoot);
+    attachCopyButtons(mdRoot);
     setupTOC(mdRoot, path);
     currentPath = path;
     document.title = `${item.title} · OI Docs`;
@@ -676,7 +835,7 @@ function searchDocs(q) {
         const end = Math.min(sec.text.length, i + q.length + 50);
         const snippet = (start > 0 ? '…' : '') + sec.text.slice(start, end).replace(/\s+/g, ' ').trim() + (end < sec.text.length ? '…' : '');
         contentHits.push({ path: doc.path, title: item.title, cat: item.cat, anchor: sec.id || null, snippet });
-        break; // 每篇最多一条正文命中
+        break;
       }
       if (contentHits.length >= 30) break;
     }
@@ -803,7 +962,7 @@ document.addEventListener('keydown', e => {
 });
 
 /* ================================================================
- * 13. 主题 / 侧栏
+ * 13. 主题（三套 rustdoc 主题）/ 侧栏
  * ================================================================ */
 const sidebar = $('#sidebar');
 const backdrop = $('#backdrop');
@@ -811,21 +970,25 @@ function closeSidebar() { sidebar.classList.remove('open'); backdrop.classList.r
 $('#menuBtn').addEventListener('click', () => { sidebar.classList.toggle('open'); backdrop.classList.toggle('show'); });
 backdrop.addEventListener('click', closeSidebar);
 
-const hljsLight = document.getElementById('hljs-light');
-const hljsDark  = document.getElementById('hljs-dark');
-function applyHljsTheme(theme) {
-  if (hljsLight) hljsLight.disabled = theme === 'dark';
-  if (hljsDark)  hljsDark.disabled  = theme !== 'dark';
-}
-function setTheme(theme, persist) {
+const THEMES = ['light', 'dark', 'ayu'];
+let currentTheme = document.documentElement.dataset.theme || 'light';
+
+function applyTheme(theme, persist) {
+  THEMES.forEach(t => {
+    const link = document.getElementById('theme-' + t);
+    if (link) link.disabled = (t !== theme);
+  });
   document.documentElement.dataset.theme = theme;
-  applyHljsTheme(theme);
+  currentTheme = theme;
   if (persist) localStorage.setItem('oi-docs-theme', theme);
 }
+
 function toggleTheme() {
-  setTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark', true);
+  const idx = THEMES.indexOf(currentTheme);
+  applyTheme(THEMES[(idx + 1) % THEMES.length], true);
 }
-setTheme(document.documentElement.dataset.theme, false);
+
+applyTheme(currentTheme, false);
 $('#themeBtn').addEventListener('click', toggleTheme);
 
 /* ================================================================
