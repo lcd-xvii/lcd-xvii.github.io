@@ -6,11 +6,27 @@
 <title>OI Docs</title>
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github-dark.min.css">
+<link id="hljs-light" rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github.min.css">
+<link id="hljs-dark" rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github-dark.min.css" disabled>
+
+<script>
+/* 尽早确定主题，避免首屏闪烁，并同步代码高亮主题 */
+(function () {
+  var saved = localStorage.getItem('oi-docs-theme');
+  var dark = saved ? saved === 'dark'
+                   : (window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches);
+  var theme = dark ? 'dark' : 'light';
+  document.documentElement.dataset.theme = theme;
+  var l = document.getElementById('hljs-light');
+  var d = document.getElementById('hljs-dark');
+  if (l) l.disabled = dark;
+  if (d) d.disabled = !dark;
+})();
+</script>
 
 <style>
-  :root{--bg:#fff;--bg-soft:#f6f8fa;--text:#1f2328;--text-soft:#59636e;--border:#d1d9e0;--accent:#0969da;--accent-soft:#ddf4ff;--code-bg:#f6f8fa;--sidebar-w:280px}
-  [data-theme="dark"]{--bg:#0d1117;--bg-soft:#161b22;--text:#e6edf3;--text-soft:#9198a1;--border:#30363d;--accent:#4493f8;--accent-soft:#121d2f;--code-bg:#161b22}
+  :root{--bg:#fff;--bg-soft:#f6f8fa;--text:#1f2328;--text-soft:#59636e;--border:#d1d9e0;--accent:#0969da;--accent-soft:#ddf4ff;--code-bg:#f6f8fa;--code-block-bg:#f6f8fa;--code-block-fg:#1f2328;--sidebar-w:280px}
+  [data-theme="dark"]{--bg:#0d1117;--bg-soft:#161b22;--text:#e6edf3;--text-soft:#9198a1;--border:#30363d;--accent:#4493f8;--accent-soft:#121d2f;--code-bg:#161b22;--code-block-bg:#0d1117;--code-block-fg:#e6edf3}
   *{box-sizing:border-box}html,body{margin:0;padding:0}
   body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);line-height:1.7;font-size:16px}
   a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
@@ -50,7 +66,7 @@
   .md ul,.md ol{padding-left:1.6em;margin:0 0 1em}.md li{margin:.25em 0}
   .md blockquote{margin:0 0 1em;padding:.5em 1em;border-left:4px solid var(--border);color:var(--text-soft);background:var(--bg-soft);border-radius:0 8px 8px 0}
   .md code{background:var(--code-bg);padding:.15em .4em;border-radius:5px;font-size:.9em;font-family:"JetBrains Mono","Fira Code",Consolas,Menlo,monospace}
-  .md pre{background:#0d1117;color:#e6edf3;padding:14px 16px;border-radius:10px;overflow-x:auto;margin:0 0 1em;border:1px solid var(--border)}
+  .md pre{background:var(--code-block-bg);color:var(--code-block-fg);padding:14px 16px;border-radius:10px;overflow-x:auto;margin:0 0 1em;border:1px solid var(--border)}
   .md pre code{background:transparent;padding:0;color:inherit;font-size:14px;line-height:1.6}
   .md pre code.hljs{background:transparent;padding:0}
   .md table{border-collapse:collapse;width:100%;margin:0 0 1em;font-size:14px}
@@ -350,13 +366,20 @@ function closeSidebar() { sidebar.classList.remove('open'); backdrop.classList.r
 $('#menuBtn').addEventListener('click', () => { sidebar.classList.toggle('open'); backdrop.classList.toggle('show'); });
 backdrop.addEventListener('click', closeSidebar);
 
-const savedTheme = localStorage.getItem('oi-docs-theme');
-if (savedTheme) document.documentElement.dataset.theme = savedTheme;
-else if (matchMedia?.('(prefers-color-scheme: dark)').matches) document.documentElement.dataset.theme = 'dark';
+/* 主题：data-theme 已在 <head> 内联脚本里提前确定，这里只负责切换与同步 hljs 样式表 */
+const hljsLight = document.getElementById('hljs-light');
+const hljsDark  = document.getElementById('hljs-dark');
+function applyHljsTheme(theme){
+  if (hljsLight) hljsLight.disabled = theme === 'dark';
+  if (hljsDark)  hljsDark.disabled  = theme !== 'dark';
+}
+applyHljsTheme(document.documentElement.dataset.theme);
+
 $('#themeBtn').addEventListener('click', () => {
   const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
   document.documentElement.dataset.theme = next;
   localStorage.setItem('oi-docs-theme', next);
+  applyHljsTheme(next);
 });
 
 $('#refreshBtn').addEventListener('click', async () => {
