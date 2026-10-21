@@ -14,10 +14,10 @@ const CONFIG = {
 };
 
 const CATEGORY_META = {
-  '题解':     { icon: '📝', order: 1 },
-  '总结':     { icon: '📋', order: 2 },
-  '算法理论': { icon: '📚', order: 3 },
-  '杂项':     { icon: '📁', order: 999 },
+  '题解':     { icon: 'file-text', order: 1 },
+  '总结':     { icon: 'list', order: 2 },
+  '算法理论': { icon: 'book', order: 3 },
+  '杂项':     { icon: 'folder', order: 999 },
 };
 
 /* ================================================================
@@ -31,6 +31,19 @@ const CACHE_KEY = `oi-docs-tree:${CONFIG.owner}/${CONFIG.repo}/${CONFIG.branch}/
 const escapeHtml = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const encodePath = p => p.split('/').map(encodeURIComponent).join('/');
 const resolvePath = (dir, rel) => { const out=[]; (dir+rel).split('/').forEach(p=>{if(!p||p==='.')return;if(p==='..')out.pop();else out.push(p);}); return out.join('/'); };
+const ICON_PATHS = {
+  'file-text': '<path d="M5 3.5h9l5 5v12H5z"/><path d="M14 3.5v5h5M8 13h8M8 16.5h8"/>',
+  list: '<path d="M9 6h10M9 12h10M9 18h10"/><path d="M4.5 6h.01M4.5 12h.01M4.5 18h.01"/>',
+  book: '<path d="M4 4.5h11a3 3 0 0 1 3 3v12H7a3 3 0 0 1-3-3z"/><path d="M4 16.5a3 3 0 0 1 3-3h11M8 8h6"/>',
+  folder: '<path d="M3.5 6.5h6l2 2h9v10h-17z"/><path d="M3.5 8.5h17"/>',
+  search: '<circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 4 4"/>',
+  link: '<path d="M10 13.5 14 9.5M8.5 15H7a4 4 0 0 1 0-8h4M15.5 9H17a4 4 0 0 1 0 8h-4"/>',
+  copy: '<rect x="8" y="8" width="11" height="12" rx="1.5"/><path d="M16 8V5a1.5 1.5 0 0 0-1.5-1.5h-9A1.5 1.5 0 0 0 4 5v11a1.5 1.5 0 0 0 1.5 1.5H8"/>',
+  check: '<path d="m5 12 4 4L19 6"/>',
+};
+function iconSvg(name, className = 'nav-icon') {
+  return `<svg class="${className}" viewBox="0 0 24 24" aria-hidden="true">${ICON_PATHS[name] || ICON_PATHS.folder}</svg>`;
+}
 
 /* ================================================================
  * 6. 数据获取
@@ -174,18 +187,22 @@ function renderSidebar(keyword = '') {
     if ((q || activeTag) && items.length === 0) return;
     const filtering = q || activeTag;
     const collapsed = (cat.collapsed && !filtering) ? ' collapsed' : '';
-    html += `<div class="nav-group${collapsed}" data-cat="${ci}">
-      <div class="nav-group-title"><span class="caret">▼</span><span>${cat.icon} ${escapeHtml(cat.name)}</span><span class="count">${items.length}/${cat.items.length}</span></div>
+    html += `<section class="nav-group${collapsed}" data-cat="${ci}">
+      <button class="nav-group-title" type="button" aria-expanded="${!collapsed}">
+        <span class="caret" aria-hidden="true"></span>${iconSvg(cat.icon)}<span class="nav-group-name">${escapeHtml(cat.name)}</span><span class="count">${items.length}</span>
+      </button>
       <ul class="nav-items">`;
     if (items.length === 0) html += `<li class="nav-empty">空</li>`;
     else items.forEach(it => {
       const active = it.path === currentPath ? ' active' : '';
-      html += `<li><a href="#${escapeHtml(encodeURIComponent(it.path))}" class="${active.trim()}" data-path="${escapeHtml(it.path)}" title="${escapeHtml(it.path)}">${escapeHtml(it.title)}</a></li>`;
+      html += `<li><a href="#${escapeHtml(encodeURIComponent(it.path))}" class="${active.trim()}" data-path="${escapeHtml(it.path)}" title="${escapeHtml(it.path)}"${active ? ' aria-current="page"' : ''}>${escapeHtml(it.title)}</a></li>`;
     });
-    html += `</ul></div>`;
+    html += `</ul></section>`;
   });
   if (!html) html = `<div class="nav-empty">${treeLoaded ? (activeTag ? '该标签下没有文档' : '没有找到 .md 文档') : '正在读取仓库…'}</div>`;
   $('#nav').innerHTML = html;
+  const documentCount = CATEGORIES.reduce((total, category) => total + category.items.length, 0);
+  $('#docCount').textContent = documentCount ? `${documentCount} 篇` : '';
 }
 
 function renderTags() {
@@ -215,7 +232,9 @@ $('#nav').addEventListener('click', e => {
   if (!t) return;
   const group = t.parentElement;
   group.classList.toggle('collapsed');
-  CATEGORIES[+group.dataset.cat].collapsed = group.classList.contains('collapsed');
+  const collapsed = group.classList.contains('collapsed');
+  t.setAttribute('aria-expanded', String(!collapsed));
+  CATEGORIES[+group.dataset.cat].collapsed = collapsed;
 });
 
 /* ================================================================
@@ -239,11 +258,12 @@ function scrollToAnchor(anchor) {
  * ================================================================ */
 function renderWelcome() {
   currentPath = null;
+  renderSidebar($('#search').value);
   document.title = 'OI 文档';
   const cards = CATEGORIES.map((c, i) =>
-    `<div class="card" data-cat="${i}"><div class="card-icon">${c.icon}</div><h3>${escapeHtml(c.name)}</h3><p>${c.items.length} 篇文档</p></div>`
+    `<button class="card" type="button" data-cat="${i}">${iconSvg(c.icon, 'card-icon')}<span class="card-copy"><span class="card-title">${escapeHtml(c.name)}</span><span class="card-description">${c.items.length} 篇文档</span></span><span class="card-arrow" aria-hidden="true">›</span></button>`
   ).join('');
-  $('#content').innerHTML = `<div class="article"><div class="hero"><h1>OI 文档</h1><p>题解 · 总结 · 算法理论</p></div><div class="card-grid">${cards || '<div class="nav-empty">还没有文档</div>'}</div></div>`;
+  $('#content').innerHTML = `<div class="article welcome-page"><div class="hero"><p class="eyebrow">OI DOCS</p><h1>算法竞赛文档</h1><p>题解、周总结与算法理论整理</p></div><div class="welcome-section"><h2>文档分类</h2><div class="card-grid">${cards || '<div class="nav-empty">还没有文档</div>'}</div></div></div>`;
 }
 
 $('#content').addEventListener('click', e => {
@@ -283,10 +303,16 @@ function fixLinks(root, mdPath) {
   });
 }
 
-function addHeadingIds(root) {
+function addHeadingIds(root, path) {
   root.querySelectorAll('h1,h2,h3,h4,h5,h6').forEach(h => {
-    if (h.id) return;
-    h.id = h.textContent.trim().toLowerCase().replace(/[^\w\u4e00-\u9fa5\s-]/g, '').replace(/\s+/g, '-');
+    if (!h.id) h.id = h.textContent.trim().toLowerCase().replace(/[^\w\u4e00-\u9fa5\s-]/g, '').replace(/\s+/g, '-');
+    if (h.querySelector('.heading-anchor')) return;
+    const link = document.createElement('a');
+    link.className = 'heading-anchor';
+    link.href = `#${encodeURIComponent(path)}#${encodeURIComponent(h.id)}`;
+    link.setAttribute('aria-label', `链接到标题：${h.textContent.trim()}`);
+    link.innerHTML = iconSvg('link', 'heading-link-icon');
+    h.prepend(link);
   });
 }
 
@@ -299,7 +325,8 @@ function attachCopyButtons(mdRoot) {
     const btn = document.createElement('button');
     btn.className = 'copy-btn';
     btn.type = 'button';
-    btn.textContent = '复制';
+    btn.setAttribute('aria-label', '复制代码');
+    btn.innerHTML = `${iconSvg('copy', 'copy-icon')}<span>复制</span>`;
     pre.appendChild(btn);
   });
 }
@@ -326,10 +353,10 @@ $('#content').addEventListener('click', async e => {
   if (pathButton) {
     const ok = await copyText(pathButton.dataset.path);
     if (!ok) return;
-    pathButton.textContent = '已复制';
+    pathButton.innerHTML = `${iconSvg('check', 'copy-icon')}<span>已复制</span>`;
     pathButton.classList.add('copied');
     setTimeout(() => {
-      pathButton.textContent = '复制路径';
+      pathButton.innerHTML = `${iconSvg('copy', 'copy-icon')}<span>复制路径</span>`;
       pathButton.classList.remove('copied');
     }, 1500);
     return;
@@ -341,10 +368,10 @@ $('#content').addEventListener('click', async e => {
   const text = code.innerText;
   const ok = await copyText(text);
   if (!ok) return;
-  btn.textContent = '已复制';
+  btn.innerHTML = `${iconSvg('check', 'copy-icon')}<span>已复制</span>`;
   btn.classList.add('copied');
   setTimeout(() => {
-    btn.textContent = '复制';
+    btn.innerHTML = `${iconSvg('copy', 'copy-icon')}<span>复制</span>`;
     btn.classList.remove('copied');
   }, 1500);
 });
@@ -389,7 +416,12 @@ async function openDoc(path, anchor) {
   const item = ITEM_MAP.get(path);
   if (!item) { showError(`未找到文档：<code>${escapeHtml(path)}</code>`); return; }
 
-  document.querySelectorAll('.nav-items a').forEach(a => a.classList.toggle('active', a.dataset.path === path));
+  document.querySelectorAll('.nav-items a').forEach(a => {
+    const active = a.dataset.path === path;
+    a.classList.toggle('active', active);
+    if (active) a.setAttribute('aria-current', 'page');
+    else a.removeAttribute('aria-current');
+  });
   $('#content').innerHTML = `<div class="article"><div class="loading">正在加载 ${escapeHtml(item.title)}…</div></div>`;
   window.scrollTo(0, 0);
 
@@ -397,21 +429,28 @@ async function openDoc(path, anchor) {
     const text = await fetchMarkdown(path);
     const html = md.render(text);
     const tagsHtml = (item.tags || []).map(t => `<span class="tag-badge">${escapeHtml(t)}</span>`).join('');
+    const category = CATEGORIES.find(candidate => candidate.name === item.cat);
+    const categoryHref = category?.items[0] ? `#${encodeURIComponent(category.items[0].path)}` : '#';
     $('#content').innerHTML = `<div class="article">
-      <h1 class="article-title">${escapeHtml(item.title)}</h1>
-      <div class="article-meta">
-        <span class="badge">${escapeHtml(item.cat)}</span>
-        <span>${escapeHtml(path)}</span>
-        <button class="copy-path-btn" type="button" data-path="${escapeHtml(path)}">复制路径</button>
-        ${tagsHtml}
-      </div>
+      <nav class="breadcrumbs" aria-label="面包屑导航">
+        <a href="#">首页</a><span aria-hidden="true">/</span><a href="${categoryHref}">${escapeHtml(item.cat)}</a><span aria-hidden="true">/</span><span aria-current="page">${escapeHtml(item.title)}</span>
+      </nav>
+      <header class="article-heading">
+        <h1 class="article-title">${escapeHtml(item.title)}</h1>
+        <div class="article-meta">
+          <span class="badge">${escapeHtml(item.cat)}</span>
+          <span class="article-path">${escapeHtml(path)}</span>
+          <button class="copy-path-btn" type="button" data-path="${escapeHtml(path)}" aria-label="复制文档路径">${iconSvg('copy', 'copy-icon')}<span>复制路径</span></button>
+          ${tagsHtml}
+        </div>
+      </header>
       <div class="toc collapsed" id="toc"></div>
       <div class="md">${html}</div>
     </div>`;
 
     const mdRoot = $('#content .md');
     fixLinks(mdRoot, path);
-    addHeadingIds(mdRoot);
+    addHeadingIds(mdRoot, path);
     attachCopyButtons(mdRoot);
     setupTOC(mdRoot, path);
     currentPath = path;
@@ -481,9 +520,11 @@ function positionSearchPanel() {
   const input = $('#search');
   const panel = $('#searchResults');
   const r = input.getBoundingClientRect();
-  panel.style.left = r.left + 'px';
-  panel.style.top = (r.bottom + 6) + 'px';
-  panel.style.width = Math.max(r.width, 260) + 'px';
+  const width = Math.min(Math.max(r.width, 260), window.innerWidth - 24);
+  const left = Math.min(Math.max(r.left, 12), window.innerWidth - width - 12);
+  panel.style.left = `${left}px`;
+  panel.style.top = `${r.bottom + 6}px`;
+  panel.style.width = `${width}px`;
 }
 
 function renderSearchResults(q) {
@@ -715,7 +756,12 @@ sidebarResizer.addEventListener('keydown', event => {
   applyPreferences();
 });
 window.addEventListener('resize', () => {
-  if (window.matchMedia('(min-width: 861px)').matches) closeSidebar();
+  if (window.matchMedia('(min-width: 861px)').matches) {
+    closeSidebar();
+  } else {
+    layout.classList.remove('sidebar-collapsed');
+    updateSidebarToggle();
+  }
 });
 
 /* ================================================================

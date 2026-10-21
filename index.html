@@ -24,12 +24,20 @@
 
 <a class="skip-main-content" href="#main-content">跳转到正文</a>
 <header class="topbar">
-  <button class="btn menu-btn" id="menuBtn" type="button" aria-label="切换侧栏" aria-expanded="true" title="切换侧栏">☰</button>
-  <div class="brand"><span class="logo">OI</span> OI Docs</div>
+  <button class="btn menu-btn icon-button" id="menuBtn" type="button" aria-label="切换侧栏" aria-expanded="true" title="切换侧栏">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+  </button>
+  <a class="brand" href="#" aria-label="OI 文档首页"><span class="logo">OI</span><span>OI 文档</span></a>
   <div class="spacer"></div>
-  <button class="btn" id="refreshBtn" type="button" title="重新同步文档">⟳ 同步</button>
+  <button class="btn toolbar-button" id="refreshBtn" type="button" title="重新同步文档">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 7v5h-5M4 17v-5h5"/><path d="M5.6 9a7 7 0 0 1 11.7-2L20 12M4 12l2.7 5a7 7 0 0 0 11.7-2"/></svg>
+    <span>同步</span>
+  </button>
   <div class="settings-wrap">
-    <button class="btn" id="settingsBtn" type="button" aria-expanded="false" aria-controls="settingsPanel">⚙ 设置</button>
+    <button class="btn toolbar-button" id="settingsBtn" type="button" aria-expanded="false" aria-controls="settingsPanel">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Z"/><path d="m19.4 15 .1.1 1.2 1-1.2 2.1-1.5-.6a8 8 0 0 1-1.5.9l-.3 1.6h-2.4l-.3-1.6a8 8 0 0 1-1.7-.1l-1.1 1.2-2.1-1.2.6-1.5a8 8 0 0 1-.9-1.5l-1.6-.3v-2.4l1.6-.3a8 8 0 0 1 .1-1.7L5.2 9.6l1.2-2.1 1.5.6a8 8 0 0 1 1.5-.9l.3-1.6h2.4l.3 1.6a8 8 0 0 1 1.7.1l1.1-1.2 2.1 1.2-.6 1.5a8 8 0 0 1 .9 1.5l1.6.3V13l-1.6.3a8 8 0 0 1-.2 1.7Z"/></svg>
+      <span>设置</span>
+    </button>
     <section class="settings-panel" id="settingsPanel" aria-label="外观设置" hidden>
       <h2>外观设置</h2>
       <fieldset>
@@ -76,7 +84,12 @@
 
 <div class="layout">
   <aside id="sidebar">
+    <div class="sidebar-heading">
+      <span>文档导航</span>
+      <span class="sidebar-doc-count" id="docCount"></span>
+    </div>
     <div class="search-wrap">
+      <svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 4 4"/></svg>
       <input class="search" id="search" type="search" placeholder="搜索文档…" autocomplete="off" aria-label="搜索文档">
       <div class="search-results" id="searchResults"></div>
     </div>
