@@ -1,0 +1,18 @@
+export const KEYBINDINGS = [
+  { command: 'sidebar', label: '打开侧栏', keys: ['Alt', 'b'], key: 'b', alt: true },
+  { command: 'settings', label: '打开设置', keys: ['Alt', ','], key: ',', alt: true },
+  { command: 'help', label: '打开帮助', keys: ['F1'], key: 'F1' },
+  { command: 'toc', label: '打开目录', keys: ['Alt', 'm'], key: 'm', alt: true },
+  { command: 'sync', label: '同步', keys: ['Alt', 'r'], key: 'r', alt: true },
+  { command: 'search', label: '搜索', keys: ['Alt', 'f'], key: 'f', alt: true },
+  { command: 'theme', label: '下一个主题', keys: ['Alt', 't'], key: 't', alt: true },
+  { command: 'fontIncrease', label: '放大字号', keys: ['Alt', '='], key: '=', alt: true },
+  { command: 'fontDecrease', label: '缩小字号', keys: ['Alt', '-'], key: '-', alt: true },
+  { command: 'widthIncrease', label: '增大页宽', keys: ['Alt', ']'], key: ']', alt: true },
+  { command: 'widthDecrease', label: '减小页宽', keys: ['Alt', '['], key: '[', alt: true },
+  { command: 'confirm', label: '确定', keys: ['Enter'], key: 'Enter', when: 'search' },
+  { command: 'switchFile', label: '切换文件', keys: ['Alt', 'o'], key: 'o', alt: true },
+  { command: 'scrollTop', label: '滚至顶部', keys: ['Alt', 'UpArrow'], key: 'ArrowUp', alt: true },
+  { command: 'scrollBottom', label: '滚至底部', keys: ['Alt', 'DownArrow'], key: 'ArrowDown', alt: true },
+  { command: 'close', label: '关闭侧栏/设置/帮助/目录/搜索', keys: ['Esc'], key: 'Escape' },
+];

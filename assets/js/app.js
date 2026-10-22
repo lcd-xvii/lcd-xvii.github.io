@@ -1,5 +1,6 @@
 import md from './markdown.js';
 import idb from './storage.js';
+import { KEYBINDINGS } from './keybindings.js';
 
 /* ================================================================
  * 2. 配置
@@ -40,9 +41,11 @@ const ICON_PATHS = {
   link: '<path d="M10 13.5 14 9.5M8.5 15H7a4 4 0 0 1 0-8h4M15.5 9H17a4 4 0 0 1 0 8h-4"/>',
   copy: '<rect x="8" y="8" width="11" height="12" rx="1.5"/><path d="M16 8V5a1.5 1.5 0 0 0-1.5-1.5h-9A1.5 1.5 0 0 0 4 5v11a1.5 1.5 0 0 0 1.5 1.5H8"/>',
   check: '<path d="m5 12 4 4L19 6"/>',
+  summary: '<path d="M2 2l4 4l4-4M2 6l4 4l4-4"/>',
 };
 function iconSvg(name, className = 'nav-icon') {
-  return `<svg class="${className}" viewBox="0 0 24 24" aria-hidden="true">${ICON_PATHS[name] || ICON_PATHS.folder}</svg>`;
+  const viewBox = name === 'summary' ? '0 0 12 12' : '0 0 24 24';
+  return `<svg class="${className}" width="18" height="18" viewBox="${viewBox}" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICON_PATHS[name] || ICON_PATHS.folder}</svg>`;
 }
 
 /* ================================================================
@@ -177,15 +180,13 @@ function rebuildItemMap() {
 /* ================================================================
  * 8. 侧边栏 + 标签云
  * ================================================================ */
-function renderSidebar(keyword = '') {
-  const q = keyword.trim().toLowerCase();
+function renderSidebar() {
   let html = '';
   CATEGORIES.forEach((cat, ci) => {
     let items = cat.items;
     if (activeTag) items = items.filter(it => (it.tags || []).includes(activeTag));
-    if (q) items = items.filter(it => it.title.toLowerCase().includes(q) || cat.name.toLowerCase().includes(q));
-    if ((q || activeTag) && items.length === 0) return;
-    const filtering = q || activeTag;
+    if (activeTag && items.length === 0) return;
+    const filtering = activeTag;
     const collapsed = (cat.collapsed && !filtering) ? ' collapsed' : '';
     html += `<section class="nav-group${collapsed}" data-cat="${ci}">
       <button class="nav-group-title" type="button" aria-expanded="${!collapsed}">
@@ -218,13 +219,13 @@ function renderTags() {
 }
 
 $('#tagCloud').addEventListener('click', e => {
-  if (e.target.closest('#tagClear')) { activeTag = null; renderTags(); renderSidebar($('#search').value); return; }
+  if (e.target.closest('#tagClear')) { activeTag = null; renderTags(); renderSidebar(); return; }
   const btn = e.target.closest('.tag');
   if (!btn) return;
   const t = btn.dataset.tag;
   activeTag = activeTag === t ? null : t;
   renderTags();
-  renderSidebar($('#search').value);
+  renderSidebar();
 });
 
 $('#nav').addEventListener('click', e => {
@@ -258,7 +259,7 @@ function scrollToAnchor(anchor) {
  * ================================================================ */
 function renderWelcome() {
   currentPath = null;
-  renderSidebar($('#search').value);
+  renderSidebar();
   document.title = 'OI 文档';
   const cards = CATEGORIES.map((c, i) =>
     `<button class="card" type="button" data-cat="${i}">${iconSvg(c.icon, 'card-icon')}<span class="card-copy"><span class="card-title">${escapeHtml(c.name)}</span><span class="card-description">${c.items.length} 篇文档</span></span><span class="card-arrow" aria-hidden="true">›</span></button>`
@@ -383,18 +384,30 @@ let tocRaf = 0;
 function setupTOC(mdRoot, path) {
   const toc = document.getElementById('toc');
   if (!toc) return;
+  if (tocScrollHandler) {
+    window.removeEventListener('scroll', tocScrollHandler);
+    tocScrollHandler = null;
+  }
+  if (tocRaf) {
+    cancelAnimationFrame(tocRaf);
+    tocRaf = 0;
+  }
   const heads = [...mdRoot.querySelectorAll('h1[id],h2[id],h3[id],h4[id]')];
-  if (heads.length < 2) { toc.remove(); return; }
+  if (heads.length < 2) {
+    toc.remove();
+    return;
+  }
 
   const list = heads.map(h => {
     const lvl = +h.tagName[1];
     return `<li class="toc-l${lvl}"><a href="#${encodeURIComponent(path)}#${encodeURIComponent(h.id)}" data-id="${escapeHtml(h.id)}">${escapeHtml(h.textContent.trim())}</a></li>`;
   }).join('');
 
-  toc.innerHTML = `<div class="toc-head" id="tocHead"><span>目录</span><span>▾</span></div><ul class="toc-list">${list}</ul>`;
-  toc.querySelector('.toc-head').addEventListener('click', () => toc.classList.toggle('collapsed'));
-
-  if (tocScrollHandler) window.removeEventListener('scroll', tocScrollHandler);
+  toc.innerHTML = `<button class="toc-head" id="tocHead" type="button" aria-expanded="false"><span>目录</span><span aria-hidden="true">▾</span></button><ul class="toc-list">${list}</ul>`;
+  toc.querySelector('.toc-head').addEventListener('click', event => {
+    const collapsed = toc.classList.toggle('collapsed');
+    event.currentTarget.setAttribute('aria-expanded', String(!collapsed));
+  });
   const update = () => {
     let activeId = heads[0].id;
     for (const h of heads) {
@@ -411,6 +424,8 @@ function setupTOC(mdRoot, path) {
 }
 
 async function openDoc(path, anchor) {
+  clearTimeout(searchTimer);
+  searchRequest++;
   closeSidebar();
   hideSearchResults();
   const item = ITEM_MAP.get(path);
@@ -436,7 +451,9 @@ async function openDoc(path, anchor) {
         <a href="#">首页</a><span aria-hidden="true">/</span><a href="${categoryHref}">${escapeHtml(item.cat)}</a><span aria-hidden="true">/</span><span aria-current="page">${escapeHtml(item.title)}</span>
       </nav>
       <header class="article-heading">
-        <h1 class="article-title">${escapeHtml(item.title)}</h1>
+        <div class="article-title-row">
+          <h1 class="article-title">${escapeHtml(item.title)}</h1>
+        </div>
         <div class="article-meta">
           <span class="badge">${escapeHtml(item.cat)}</span>
           <span class="article-path">${escapeHtml(path)}</span>
@@ -477,130 +494,226 @@ async function onHashChange() {
 let searchResults = [];
 let searchSel = -1;
 let searchTimer = null;
+let searchRequest = 0;
+let searchIndexError = '';
+let searchIndexPromise = null;
 
-function highlight(snippet, q) {
-  const s = escapeHtml(snippet);
-  const qe = escapeHtml(q).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  if (!qe) return s;
-  return s.replace(new RegExp(qe, 'gi'), m => '<mark>' + m + '</mark>');
+function searchTerms(query) {
+  return [...query.matchAll(/"([^"]+)"|(\S+)/g)]
+    .map(match => (match[1] || match[2]).trim().toLocaleLowerCase())
+    .filter(Boolean);
 }
 
-function searchDocs(q) {
-  q = q.trim().toLowerCase();
-  if (!q) return [];
-  const titleHits = [];
-  const seen = new Set();
+function highlight(text, query) {
+  const terms = searchTerms(query).sort((a, b) => b.length - a.length);
+  const escapedText = escapeHtml(text);
+  if (!terms.length) return escapedText;
+  const expression = new RegExp(terms.map(term => term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|'), 'giu');
+  return escapedText.replace(expression, match => `<mark>${match}</mark>`);
+}
+
+function searchDocs(query, scope = 'all') {
+  const terms = searchTerms(query);
+  if (!terms.length) return [];
+  const results = [];
+  const sectionsByPath = new Map((SEARCH_INDEX || []).map(doc => [doc.path, doc.sections || []]));
+
   for (const [path, item] of ITEM_MAP) {
-    if (item.title.toLowerCase().includes(q)) {
-      titleHits.push({ path, title: item.title, cat: item.cat, anchor: null, snippet: '' });
-      seen.add(path);
-    }
-  }
-  const contentHits = [];
-  if (SEARCH_INDEX) {
-    for (const doc of SEARCH_INDEX) {
-      const item = ITEM_MAP.get(doc.path);
-      if (!item || seen.has(doc.path)) continue;
-      for (const sec of (doc.sections || [])) {
-        const i = sec.text.toLowerCase().indexOf(q);
-        if (i === -1) continue;
-        const start = Math.max(0, i - 30);
-        const end = Math.min(sec.text.length, i + q.length + 50);
-        const snippet = (start > 0 ? '…' : '') + sec.text.slice(start, end).replace(/\s+/g, ' ').trim() + (end < sec.text.length ? '…' : '');
-        contentHits.push({ path: doc.path, title: item.title, cat: item.cat, anchor: sec.id || null, snippet });
+    const fields = [
+      { value: item.title, score: 45, kind: 'title' },
+      { value: item.cat, score: 18, kind: 'category' },
+      { value: path, score: 8, kind: 'path' },
+      { value: (item.tags || []).join(' '), score: 22, kind: 'tag' },
+    ].filter(field => scope !== 'title' || field.kind === 'title');
+    const sections = sectionsByPath.get(path) || [];
+    const contentOnly = scope === 'content';
+    const titleOnly = scope === 'title';
+    let score = 0;
+    let matched = true;
+    let bestSection = null;
+    let bestSectionScore = -1;
+
+    for (const term of terms) {
+      const fieldHit = !contentOnly && fields.reduce((best, field) => {
+        const value = field.value.toLocaleLowerCase();
+        if (!value.includes(term)) return best;
+        const fieldScore = field.score +
+          (field.kind === 'title' && value === term ? 35 : 0) +
+          (field.kind === 'title' && value.startsWith(term) ? 15 : 0);
+        return Math.max(best, fieldScore);
+      }, 0);
+      let contentHit = false;
+
+      if (!titleOnly) {
+        for (const section of sections) {
+          const text = String(section.text || '');
+          const index = text.toLocaleLowerCase().indexOf(term);
+          if (index < 0) continue;
+          contentHit = true;
+          const sectionScore = terms.reduce((total, candidate) =>
+            total + (text.toLocaleLowerCase().includes(candidate) ? 10 : 0), 0) + (section.id ? 2 : 0);
+          if (sectionScore > bestSectionScore) {
+            bestSection = { ...section, text };
+            bestSectionScore = sectionScore;
+          }
+        }
+      }
+
+      if (contentOnly ? !contentHit : (titleOnly ? !fieldHit : (!fieldHit && !contentHit))) {
+        matched = false;
         break;
       }
-      if (contentHits.length >= 30) break;
+      score += Math.max(fieldHit, contentHit ? bestSectionScore : 0);
     }
+    if (!matched) continue;
+
+    let snippet = '';
+    if (bestSection) {
+      const lower = bestSection.text.toLocaleLowerCase();
+      const firstMatch = terms.map(term => lower.indexOf(term)).filter(index => index >= 0).sort((a, b) => a - b)[0] || 0;
+      const start = Math.max(0, firstMatch - 48);
+      const end = Math.min(bestSection.text.length, firstMatch + 120);
+      snippet = (start > 0 ? '…' : '') +
+        bestSection.text.slice(start, end).replace(/\s+/g, ' ').trim() +
+        (end < bestSection.text.length ? '…' : '');
+    }
+    results.push({
+      path,
+      title: item.title,
+      cat: item.cat,
+      anchor: bestSection?.id || null,
+      snippet,
+      score,
+    });
   }
-  return [...titleHits, ...contentHits].slice(0, 40);
+  return results.sort((a, b) => b.score - a.score || a.title.localeCompare(b.title, 'zh-CN')).slice(0, 60);
 }
 
-function positionSearchPanel() {
-  const input = $('#search');
-  const panel = $('#searchResults');
-  const r = input.getBoundingClientRect();
-  const width = Math.min(Math.max(r.width, 260), window.innerWidth - 24);
-  const left = Math.min(Math.max(r.left, 12), window.innerWidth - width - 12);
-  panel.style.left = `${left}px`;
-  panel.style.top = `${r.bottom + 6}px`;
-  panel.style.width = `${width}px`;
-}
-
-function renderSearchResults(q) {
-  const box = $('#searchResults');
+function renderDialogSearchResults(query, scope) {
+  const box = $('#searchDialogResults');
+  const status = $('#searchStatus');
+  const terms = searchTerms(query);
+  if (!terms.length) {
+    status.textContent = '输入关键词开始搜索';
+    box.innerHTML = '<div class="search-dialog-empty">支持多个关键词和加引号的短语</div>';
+    return;
+  }
   if (!searchResults.length) {
-    box.innerHTML = `<div class="search-empty">没有结果</div>`;
-  } else {
-    box.innerHTML = searchResults.map((r, i) => `
-      <a class="search-result${i === searchSel ? ' sel' : ''}" data-i="${i}"
-         href="#${encodeURIComponent(r.path)}${r.anchor ? '#' + encodeURIComponent(r.anchor) : ''}">
-        <div class="sr-title">${highlight(r.title, q)}<span class="sr-cat">${escapeHtml(r.cat)}</span></div>
-        ${r.snippet ? `<div class="sr-snippet">${highlight(r.snippet, q)}</div>` : ''}
-      </a>`).join('');
+    status.textContent = searchIndexError && scope !== 'title'
+      ? '正文索引加载失败；请重试或改为仅搜索标题'
+      : '没有匹配的文档';
+    box.innerHTML = `<div class="search-dialog-empty">${searchIndexError && scope !== 'title'
+      ? '无法载入正文搜索索引。可继续搜索标题，或重新载入索引。<br><button class="retry-search-index" type="button">重新载入全文索引</button>'
+      : '没有找到匹配项，请尝试更短或不同的关键词。'}</div>`;
+    return;
   }
-  positionSearchPanel();
-  box.classList.add('show');
+  status.textContent = `${searchResults.length} 条结果${searchResults.length === 60 ? '（显示前 60 条）' : ''}`;
+  box.innerHTML = searchResults.map((result, index) => `
+    <a class="dialog-search-result" id="dialog-result-${index}" role="option" aria-selected="${index === searchSel}"
+       href="#${encodeURIComponent(result.path)}${result.anchor ? '#' + encodeURIComponent(result.anchor) : ''}" data-i="${index}">
+      ${iconSvg(result.snippet ? 'file-text' : 'folder', 'dialog-search-result-icon')}
+      <span class="dialog-result-copy">
+        <span class="dialog-result-title">${highlight(result.title, query)}<span class="dialog-result-meta">${escapeHtml(result.cat)} · ${escapeHtml(result.path)}</span></span>
+        ${result.snippet ? `<span class="dialog-result-snippet">${highlight(result.snippet, query)}</span>` : ''}
+      </span>
+    </a>`).join('');
+  updateSearchSel();
+}
+
+async function runSearch(query, scope) {
+  const request = ++searchRequest;
+  const terms = searchTerms(query);
+  searchSel = -1;
+  if (!terms.length) {
+    searchResults = [];
+    renderDialogSearchResults(query, scope);
+    return;
+  }
+  if (scope !== 'title' && !SEARCH_INDEX) {
+    $('#searchStatus').textContent = '正在载入正文索引…';
+    if (!searchIndexPromise) {
+      searchIndexPromise = loadSearchIndex().then(() => {
+        searchIndexError = '';
+      }).catch(error => {
+        searchIndexError = error.message || String(error);
+        console.error('[OI 文档] 正文搜索索引加载失败', error);
+      });
+    }
+    await searchIndexPromise;
+  }
+  if (request !== searchRequest) return;
+  searchResults = searchDocs(query, scope);
+  renderDialogSearchResults(query, scope);
 }
 
 function hideSearchResults() {
-  $('#searchResults').classList.remove('show');
   searchResults = [];
   searchSel = -1;
 }
 
 function updateSearchSel() {
-  $('#searchResults').querySelectorAll('.search-result').forEach((el, i) => {
-    el.classList.toggle('sel', i === searchSel);
+  $('#searchDialogResults').querySelectorAll('.dialog-search-result').forEach((el, i) => {
+    el.setAttribute('aria-selected', String(i === searchSel));
     if (i === searchSel) el.scrollIntoView({ block: 'nearest' });
   });
 }
 
 function goResult(r) {
+  clearTimeout(searchTimer);
+  searchRequest++;
   hideSearchResults();
-  $('#search').blur();
+  if (searchDialog.open) searchDialog.close();
   location.hash = encodeURIComponent(r.path) + (r.anchor ? '#' + r.anchor : '');
 }
 
-$('#search').addEventListener('input', e => {
-  const q = e.target.value;
-  renderSidebar(q);
-  clearTimeout(searchTimer);
-  searchSel = -1;
-  if (!q.trim()) { hideSearchResults(); return; }
-  searchTimer = setTimeout(async () => {
-    if (MANIFEST) { try { await loadSearchIndex(); } catch {} }
-    searchResults = searchDocs(q);
-    renderSearchResults(q);
-  }, 200);
-});
-
-$('#search').addEventListener('keydown', e => {
-  if (e.key === 'Escape') { hideSearchResults(); e.target.blur(); return; }
-  if (!searchResults.length) return;
-  if (e.key === 'ArrowDown') { e.preventDefault(); searchSel = Math.min(searchSel + 1, searchResults.length - 1); updateSearchSel(); }
-  else if (e.key === 'ArrowUp') { e.preventDefault(); searchSel = Math.max(searchSel - 1, 0); updateSearchSel(); }
-  else if (e.key === 'Enter') {
-    if (searchSel >= 0) { e.preventDefault(); goResult(searchResults[searchSel]); }
-    else if (searchResults[0]) { e.preventDefault(); goResult(searchResults[0]); }
+const searchDialog = $('#searchDialog');
+const globalSearch = $('#globalSearch');
+$('#searchBtn').addEventListener('click', () => showSearch('all'));
+$('#searchClose').addEventListener('click', () => searchDialog.close());
+searchDialog.addEventListener('click', event => {
+  if (event.target === searchDialog) searchDialog.close();
+  if (event.target.closest('.dialog-search-result')) searchDialog.close();
+  if (event.target.closest('.retry-search-index')) {
+    SEARCH_INDEX = null;
+    searchIndexPromise = null;
+    searchIndexError = '';
+    runSearch(globalSearch.value, $('#searchScope').value);
   }
 });
-
-$('#searchResults').addEventListener('click', e => {
-  const a = e.target.closest('.search-result');
-  if (a) { hideSearchResults(); $('#search').blur(); }
+globalSearch.addEventListener('input', () => {
+  clearTimeout(searchTimer);
+  searchRequest++;
+  const query = globalSearch.value;
+  searchResults = [];
+  searchSel = -1;
+  $('#searchStatus').textContent = query.trim() ? '正在搜索…' : '输入关键词开始搜索';
+  $('#searchDialogResults').innerHTML = query.trim()
+    ? '<div class="search-dialog-empty">正在搜索…</div>'
+    : '<div class="search-dialog-empty">支持多个关键词和加引号的短语</div>';
+  searchTimer = setTimeout(() => runSearch(query, $('#searchScope').value), 100);
 });
-
-document.addEventListener('click', e => {
-  if (!e.target.closest('.search-wrap')) hideSearchResults();
+$('#searchScope').addEventListener('change', () => {
+  clearTimeout(searchTimer);
+  searchRequest++;
+  searchResults = [];
+  searchSel = -1;
+  $('#searchStatus').textContent = globalSearch.value.trim() ? '正在搜索…' : '输入关键词开始搜索';
+  runSearch(globalSearch.value, $('#searchScope').value);
 });
-
-window.addEventListener('resize', () => {
-  if ($('#searchResults').classList.contains('show')) positionSearchPanel();
+globalSearch.addEventListener('keydown', event => {
+  if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+    if (!searchResults.length) return;
+    event.preventDefault();
+    searchSel = event.key === 'ArrowDown'
+      ? Math.min(searchSel + 1, searchResults.length - 1)
+      : Math.max(searchSel <= 0 ? 0 : searchSel - 1, 0);
+    updateSearchSel();
+  } else if (event.key === 'Enter' && searchResults.length) {
+    event.preventDefault();
+    goResult(searchResults[searchSel >= 0 ? searchSel : 0]);
+    searchDialog.close();
+  }
 });
-window.addEventListener('scroll', () => {
-  if ($('#searchResults').classList.contains('show')) positionSearchPanel();
-}, { passive: true });
 
 /* ================================================================
  * 13. 主题（三套 rustdoc 主题）/ 侧栏
@@ -630,11 +743,21 @@ function setSidebarOpen(open) {
   sidebar.classList.toggle('open', open);
   backdrop.classList.toggle('show', open);
   updateSidebarToggle();
+  if (open) focusSidebarStart();
+  else $('#menuBtn').focus();
 }
+
+function focusSidebarStart() {
+  sidebar.querySelector('button:not([disabled]), a[href], [tabindex="0"]')?.focus();
+}
+
 function toggleSidebar() {
   if (window.matchMedia('(min-width: 861px)').matches) {
-    layout.classList.toggle('sidebar-collapsed');
+    const open = layout.classList.contains('sidebar-collapsed');
+    layout.classList.toggle('sidebar-collapsed', !open);
     updateSidebarToggle();
+    if (open) focusSidebarStart();
+    else $('#menuBtn').focus();
     return;
   }
   setSidebarOpen(!sidebar.classList.contains('open'));
@@ -643,8 +766,16 @@ function toggleSidebar() {
 $('#menuBtn').addEventListener('click', toggleSidebar);
 backdrop.addEventListener('click', closeSidebar);
 
+const helpDialog = $('#helpDialog');
+$('#helpBtn').addEventListener('click', showHelp);
+$('#helpClose').addEventListener('click', () => helpDialog.close());
+helpDialog.addEventListener('click', event => {
+  if (event.target === helpDialog) helpDialog.close();
+});
+
 const SETTINGS_KEY = 'oi-docs-settings';
-const VALID_FONT_SIZES = ['14', '16', '18', '20'];
+const PREFERENCES_VERSION = 2;
+const VALID_FONT_SIZES = ['16', '18', '20', '22'];
 const VALID_WIDTHS = ['720', '960', '1200', 'full'];
 const preferences = (() => {
   let saved = {};
@@ -654,11 +785,14 @@ const preferences = (() => {
     console.warn('[OI 文档] 设置读取失败，使用默认值', error);
   }
   if (!saved || typeof saved !== 'object') saved = {};
+  const savedFontSize = String(saved.fontSize);
   return {
     theme: THEMES.includes(saved.theme) ? saved.theme :
       (THEMES.includes(localStorage.getItem('oi-docs-theme')) ? localStorage.getItem('oi-docs-theme') : 'light'),
     font: saved.font === 'serif' ? 'serif' : 'sans',
-    fontSize: VALID_FONT_SIZES.includes(String(saved.fontSize)) ? String(saved.fontSize) : '16',
+    fontSize: VALID_FONT_SIZES.includes(savedFontSize)
+      ? (saved.version === PREFERENCES_VERSION || savedFontSize !== '16' ? savedFontSize : '18')
+      : '18',
     contentWidth: VALID_WIDTHS.includes(String(saved.contentWidth)) ? String(saved.contentWidth) : '960',
     wrapCode: saved.wrapCode === true,
     sidebarWidth: Number.isFinite(saved.sidebarWidth) ? Math.min(420, Math.max(180, saved.sidebarWidth)) : 250,
@@ -666,7 +800,7 @@ const preferences = (() => {
 })();
 
 function savePreferences() {
-  localStorage.setItem(SETTINGS_KEY, JSON.stringify(preferences));
+  localStorage.setItem(SETTINGS_KEY, JSON.stringify({ ...preferences, version: PREFERENCES_VERSION }));
   localStorage.setItem('oi-docs-theme', preferences.theme);
 }
 
@@ -705,7 +839,7 @@ $('#resetSettings').addEventListener('click', () => {
   Object.assign(preferences, {
     theme: 'light',
     font: 'sans',
-    fontSize: '16',
+    fontSize: '18',
     contentWidth: '960',
     wrapCode: false,
     sidebarWidth: 250,
@@ -717,16 +851,155 @@ function toggleSettings(force) {
   const open = force ?? settingsPanel.hidden;
   settingsPanel.hidden = !open;
   settingsButton.setAttribute('aria-expanded', String(open));
+  if (open) settingsPanel.querySelector('button:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex="0"]')?.focus();
+  else if (settingsPanel.contains(document.activeElement)) settingsButton.focus();
 }
 settingsButton.addEventListener('click', () => toggleSettings());
 document.addEventListener('click', event => {
   if (!event.target.closest('.settings-wrap')) toggleSettings(false);
 });
-document.addEventListener('keydown', event => {
-  if (event.key !== 'Escape') return;
+
+function showSearch() {
+  toggleSettings(false);
+  if (helpDialog.open) helpDialog.close();
+  if (!searchDialog.open) searchDialog.showModal();
+  $('#searchScope').value = 'all';
+  runSearch(globalSearch.value, 'all');
+  requestAnimationFrame(() => globalSearch.focus());
+}
+
+function showFileSwitcher() {
+  toggleSettings(false);
+  if (helpDialog.open) helpDialog.close();
+  if (!searchDialog.open) searchDialog.showModal();
+  globalSearch.value = '';
+  $('#searchScope').value = 'title';
+  runSearch('', 'title');
+  requestAnimationFrame(() => globalSearch.focus());
+}
+
+function showTOC() {
+  const toc = $('#content .toc');
+  if (!toc) return;
+  toc.classList.remove('collapsed');
+  const heading = toc.querySelector('.toc-head');
+  heading?.setAttribute('aria-expanded', 'true');
+  toc.querySelector('.toc-list a')?.focus();
+}
+
+function showHelp() {
+  toggleSettings(false);
+  if (searchDialog.open) searchDialog.close();
+  if (!helpDialog.open) helpDialog.showModal();
+  requestAnimationFrame(() => $('#helpClose').focus());
+}
+
+function toggleTheme() {
+  const themeIndex = THEMES.indexOf(preferences.theme);
+  preferences.theme = THEMES[(themeIndex + 1) % THEMES.length];
+  applyPreferences();
+}
+
+function closePanels(target) {
   toggleSettings(false);
   hideSearchResults();
-  closeSidebar();
+  if (window.matchMedia('(min-width: 861px)').matches) {
+    layout.classList.add('sidebar-collapsed');
+    updateSidebarToggle();
+  } else {
+    closeSidebar();
+  }
+  if (searchDialog.open) searchDialog.close();
+  if (helpDialog.open) helpDialog.close();
+  const toc = $('#content .toc');
+  if (toc) {
+    toc.classList.add('collapsed');
+    toc.querySelector('.toc-head')?.setAttribute('aria-expanded', 'false');
+  }
+  if (target instanceof HTMLElement && target.matches('input, textarea, select, [contenteditable="true"]')) {
+    target.blur();
+  }
+}
+
+function adjustFontSize(direction) {
+  const current = VALID_FONT_SIZES.indexOf(preferences.fontSize);
+  const next = Math.max(0, Math.min(VALID_FONT_SIZES.length - 1, current + direction));
+  if (next === current) return;
+  preferences.fontSize = VALID_FONT_SIZES[next];
+  applyPreferences();
+}
+
+function adjustContentWidth(direction) {
+  const current = VALID_WIDTHS.indexOf(preferences.contentWidth);
+  const next = Math.max(0, Math.min(VALID_WIDTHS.length - 1, current + direction));
+  if (next === current) return;
+  preferences.contentWidth = VALID_WIDTHS[next];
+  applyPreferences();
+}
+
+const SHORTCUT_ACTIONS = {
+  sidebar: toggleSidebar,
+  settings: () => toggleSettings(),
+  help: showHelp,
+  toc: showTOC,
+  sync: () => $('#refreshBtn').click(),
+  search: showSearch,
+  theme: toggleTheme,
+  fontIncrease: () => adjustFontSize(1),
+  fontDecrease: () => adjustFontSize(-1),
+  widthIncrease: () => adjustContentWidth(1),
+  widthDecrease: () => adjustContentWidth(-1),
+  confirm: () => {
+    if (searchDialog.open && searchResults.length) {
+      goResult(searchResults[searchSel >= 0 ? searchSel : 0]);
+    }
+  },
+  switchFile: showFileSwitcher,
+  scrollTop: () => window.scrollTo({ top: 0, behavior: 'smooth' }),
+  scrollBottom: () => window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'smooth' }),
+  close: () => closePanels(document.activeElement),
+};
+
+function renderShortcutList() {
+  const formatKeys = keys => keys.map(key => `<kbd>${escapeHtml(key)}</kbd>`).join(' + ');
+  $('#shortcutList').innerHTML = KEYBINDINGS.map(binding =>
+    `<tr><th>${formatKeys(binding.keys)}</th><td>${escapeHtml(binding.label)}</td></tr>`
+  ).join('');
+}
+
+renderShortcutList();
+
+function isTypingTarget(target) {
+  return target instanceof HTMLElement &&
+    (target.isContentEditable || target.matches('input, textarea, select'));
+}
+
+function matchesShortcut(binding, event) {
+  return event.key === binding.key &&
+    event.altKey === Boolean(binding.alt) &&
+    event.ctrlKey === Boolean(binding.ctrl) &&
+    event.metaKey === Boolean(binding.meta) &&
+    event.shiftKey === Boolean(binding.shift);
+}
+
+document.addEventListener('keydown', event => {
+  const typing = isTypingTarget(event.target);
+  const closeBinding = KEYBINDINGS.find(binding => binding.command === 'close');
+  if (closeBinding && matchesShortcut(closeBinding, event)) {
+    event.preventDefault();
+    SHORTCUT_ACTIONS.close();
+    return;
+  }
+
+  const binding = KEYBINDINGS.find(candidate =>
+    candidate.key && matchesShortcut(candidate, event) &&
+    (!candidate.when || (candidate.when === 'search' && searchDialog.open && event.target === globalSearch)) &&
+    (!typing || candidate.alt || candidate.command === 'confirm'));
+  if (binding) {
+    event.preventDefault();
+    SHORTCUT_ACTIONS[binding.command]();
+    return;
+  }
 });
 
 let resizeStartX = 0;
@@ -768,8 +1041,13 @@ window.addEventListener('resize', () => {
  * 14. 加载 / 同步
  * ================================================================ */
 async function loadContent() {
+  searchRequest++;
   MANIFEST = null;
   SEARCH_INDEX = null;
+  searchIndexPromise = null;
+  searchIndexError = '';
+  searchIndexPromise = null;
+  searchIndexError = '';
   try {
     MANIFEST = await loadManifest();
     CATEGORIES = buildFromManifest(MANIFEST);
@@ -780,7 +1058,7 @@ async function loadContent() {
   treeLoaded = true;
   rebuildItemMap();
   renderTags();
-  renderSidebar($('#search').value);
+  renderSidebar();
   await onHashChange();
 }
 
