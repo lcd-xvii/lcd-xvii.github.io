@@ -1,0 +1,103 @@
+/* 主页样式：复用 oi-docs 的 rustdoc 风格，但禁用动画与过渡。 */
+
+.home *,
+.home *::before,
+.home *::after {
+  transition: none !important;
+  animation: none !important;
+}
+
+.home .topbar { gap: 6px; }
+.home .brand { text-decoration: none; }
+.home .brand:hover { text-decoration: none; }
+
+.home .home-theme {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: 2px;
+  color: var(--text-soft);
+  font-size: 12px;
+}
+
+.home .home-theme select {
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--bg-soft);
+  color: var(--text);
+  font: inherit;
+  font-size: 12px;
+  padding: 4px 6px;
+  cursor: pointer;
+}
+
+.home .home-theme select:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.home .welcome-page { padding-bottom: 40px; }
+.home .hero { padding-top: 40px; }
+
+.home .home-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+.home .btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  text-decoration: none;
+}
+
+.home .btn:hover { text-decoration: none; }
+
+.home .btn-primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #ffffff;
+}
+
+.home .btn-primary:hover {
+  background: var(--accent);
+  color: #ffffff;
+  filter: brightness(.95);
+}
+
+.home .card { text-decoration: none; }
+.home .card:hover { text-decoration: none; }
+.home .card-icon { width: 20px; height: 20px; }
+
+.home .home-prose {
+  max-width: 760px;
+  color: var(--text-soft);
+}
+
+.home .home-prose p { margin: 0 0 10px; }
+.home .home-prose strong { color: var(--text); font-weight: 600; }
+.home .home-tags { margin: 14px 0 0; }
+
+.home .home-footer {
+  margin-top: 38px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+  color: var(--text-soft);
+  font-size: 13px;
+}
+
+@media (max-width: 700px) {
+  .home .home-theme-label { display: none; }
+  .home .home-theme select { max-width: 72px; }
+}
+
+@media (max-width: 600px) {
+  .home .brand .logo { display: grid; }
+}
+
+@media (max-width: 520px) {
+  .home .topbar { gap: 4px; }
+  .home .brand span:last-child { display: none; }
+}

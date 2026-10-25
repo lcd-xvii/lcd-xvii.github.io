@@ -1,0 +1,9 @@
+.git
+.github
+.wrangler
+.assetsignore
+.gitignore
+.nojekyll
+/README.md
+worker.mjs
+wrangler.toml
