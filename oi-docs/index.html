@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OI 文档</title>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@400;500;600;700&family=Source+Code+Pro:wght@400;600&display=swap" rel="stylesheet">
+
+<script>
+(function () {
+  var saved = localStorage.getItem('oi-docs-theme');
+  var theme = ['light', 'dark', 'ayu'].includes(saved) ? saved : 'light';
+  document.documentElement.dataset.theme = theme;
+})();
+</script>
+
+<link rel="stylesheet" href="assets/css/app.css?v=20261022-keybindings-6">
+</head>
+<body>
+
+<a class="skip-main-content" href="#main-content">跳转到正文</a>
+<header class="topbar">
+  <button class="btn menu-btn icon-button" id="menuBtn" type="button" aria-label="切换侧栏" aria-expanded="true" title="切换侧栏">
+    <svg class="toolbar-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+  </button>
+  <a class="brand" href="#" aria-label="OI 文档首页"><span class="logo">OI</span><span>OI 文档</span></a>
+  <div class="spacer"></div>
+  <button class="btn toolbar-button" id="searchBtn" type="button" title="搜索文档" aria-label="搜索文档">
+    <svg class="toolbar-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 4 4"/></svg>
+    <span>搜索</span>
+  </button>
+  <button class="btn toolbar-button" id="refreshBtn" type="button" title="重新同步文档">
+    <svg class="toolbar-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 7v5h-5M4 17v-5h5"/><path d="M5.6 9a7 7 0 0 1 11.7-2L20 12M4 12l2.7 5a7 7 0 0 0 11.7-2"/></svg>
+    <span>同步</span>
+  </button>
+  <button class="btn toolbar-button" id="helpBtn" type="button" title="使用帮助" aria-label="使用帮助">
+    <svg class="toolbar-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.6 9a2.5 2.5 0 1 1 4.3 1.7c-1.1 1.1-1.9 1.3-1.9 3"/><path d="M12 17.5h.01"/></svg>
+    <span>帮助</span>
+  </button>
+  <div class="settings-wrap">
+    <button class="btn toolbar-button" id="settingsBtn" type="button" title="外观设置" aria-label="外观设置" aria-expanded="false" aria-controls="settingsPanel">
+      <svg class="toolbar-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Z"/><path d="m19.4 15 .1.1 1.2 1-1.2 2.1-1.5-.6a8 8 0 0 1-1.5.9l-.3 1.6h-2.4l-.3-1.6a8 8 0 0 1-1.7-.1l-1.1 1.2-2.1-1.2.6-1.5a8 8 0 0 1-.9-1.5l-1.6-.3v-2.4l1.6-.3a8 8 0 0 1 .1-1.7L5.2 9.6l1.2-2.1 1.5.6a8 8 0 0 1 1.5-.9l.3-1.6h2.4l.3 1.6a8 8 0 0 1 1.7.1l1.1-1.2 2.1 1.2-.6 1.5a8 8 0 0 1 .9 1.5l1.6.3V13l-1.6.3a8 8 0 0 1-.2 1.7Z"/></svg>
+      <span>设置</span>
+    </button>
+    <section class="settings-panel" id="settingsPanel" aria-label="外观设置" hidden>
+      <h2>外观设置</h2>
+      <fieldset>
+        <legend>主题</legend>
+        <div class="theme-options">
+          <button type="button" data-theme-choice="light">浅色</button>
+          <button type="button" data-theme-choice="dark">深色</button>
+          <button type="button" data-theme-choice="ayu">Ayu</button>
+        </div>
+      </fieldset>
+      <label class="setting-row" for="fontFamily">
+        <span>字体</span>
+        <select id="fontFamily">
+          <option value="sans">无衬线</option>
+          <option value="serif">衬线</option>
+        </select>
+      </label>
+      <label class="setting-row" for="fontSize">
+        <span>字号</span>
+        <select id="fontSize">
+          <option value="16">较小</option>
+          <option value="18">标准</option>
+          <option value="20">较大</option>
+          <option value="22">特大</option>
+        </select>
+      </label>
+      <label class="setting-row" for="contentWidth">
+        <span>每行文字宽度</span>
+        <select id="contentWidth">
+          <option value="720">较窄</option>
+          <option value="960">标准</option>
+          <option value="1200">较宽</option>
+          <option value="full">最大宽度</option>
+        </select>
+      </label>
+      <label class="setting-check" for="wrapCode">
+        <input id="wrapCode" type="checkbox">
+        <span>自动换行代码</span>
+      </label>
+      <button class="settings-reset" id="resetSettings" type="button">恢复默认设置</button>
+    </section>
+  </div>
+</header>
+
+<dialog class="search-dialog" id="searchDialog" aria-labelledby="searchTitle">
+  <div class="search-dialog-heading">
+    <h2 id="searchTitle">搜索文档</h2>
+    <button class="icon-button search-close" id="searchClose" type="button" aria-label="关闭搜索" title="关闭">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg>
+    </button>
+  </div>
+  <label class="global-search-wrap" for="globalSearch">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 4 4"/></svg>
+    <input id="globalSearch" type="search" autocomplete="off" placeholder="搜索标题或正文…">
+    <kbd>/</kbd>
+  </label>
+  <div class="search-dialog-options">
+    <label for="searchScope">搜索范围</label>
+    <select id="searchScope">
+      <option value="all">标题与正文</option>
+      <option value="title">仅标题</option>
+      <option value="content">仅正文</option>
+    </select>
+    <span id="searchStatus" role="status" aria-live="polite">输入关键词开始搜索</span>
+  </div>
+  <div class="search-dialog-results" id="searchDialogResults" role="listbox" aria-label="搜索结果"></div>
+  <div class="search-dialog-footer"><kbd>↑</kbd> <kbd>↓</kbd> 选择 <kbd>Enter</kbd> 打开 <kbd>Esc</kbd> 关闭</div>
+</dialog>
+
+<dialog class="help-dialog" id="helpDialog" aria-labelledby="helpTitle">
+  <div class="help-dialog-heading">
+    <h2 id="helpTitle">使用帮助</h2>
+    <button class="icon-button help-close" id="helpClose" type="button" aria-label="关闭帮助" title="关闭">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg>
+    </button>
+  </div>
+  <p>OI 文档用于浏览题解、总结与算法理论资料。搜索支持多个关键词；结果按相关度排序，并可按标题或正文筛选。</p>
+  <h3>快捷键</h3>
+  <table class="shortcut-table"><tbody id="shortcutList"></tbody></table>
+  <h3>阅读与导航</h3>
+  <ul>
+    <li><strong>搜索：</strong>使用顶部主搜索筛选标题或正文；方向键选择结果，Enter 打开。</li>
+    <li><strong>目录：</strong>目录栏位于文档标题下方；点击目录栏标题可折叠条目，点击条目可跳转；按 <kbd>Alt</kbd>+<kbd>m</kbd> 展开目录。</li>
+    <li><strong>侧栏：</strong>点击顶部菜单按钮切换侧栏；拖动侧栏边缘调整宽度。按 <kbd>Esc</kbd> 也可关闭侧栏。</li>
+    <li><strong>复制：</strong>复制文档路径或代码块；标题旁的链条图标可打开对应标题锚点。</li>
+    <li><strong>外观：</strong>在设置中调整主题、字体、字号、每行文字宽度和代码换行。</li>
+  </ul>
+</dialog>
+
+<div class="layout">
+  <aside id="sidebar">
+    <div class="sidebar-heading">
+      <span>文档导航</span>
+      <span class="sidebar-doc-count" id="docCount"></span>
+    </div>
+    <div id="tagCloud"></div>
+    <nav id="nav"></nav>
+  </aside>
+  <div class="sidebar-resizer" id="sidebarResizer" role="separator" aria-label="调整侧栏宽度" aria-orientation="vertical" aria-valuemin="180" aria-valuemax="420" tabindex="0"></div>
+  <div class="backdrop" id="backdrop"></div>
+  <main id="main-content" tabindex="-1"><div id="content"></div></main>
+</div>
+
+<script type="module" src="assets/js/app.js?v=20261022-keybindings-7"></script>
+</body>
+</html>
