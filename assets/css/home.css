@@ -11,60 +11,14 @@
 .home .brand { text-decoration: none; }
 .home .brand:hover { text-decoration: none; }
 
-.home .home-theme {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  margin-left: 2px;
-  color: var(--text-soft);
-  font-size: 12px;
-}
-
-.home .home-theme select {
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  background: var(--bg-soft);
-  color: var(--text);
-  font: inherit;
-  font-size: 12px;
-  padding: 4px 6px;
-  cursor: pointer;
-}
-
-.home .home-theme select:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
-}
-
 .home .welcome-page { padding-bottom: 40px; }
 .home .hero { padding-top: 40px; }
-
-.home .home-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 20px;
-}
 
 .home .btn {
   display: inline-flex;
   align-items: center;
   gap: 6px;
   text-decoration: none;
-}
-
-.home .btn:hover { text-decoration: none; }
-
-.home .btn-primary {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: #ffffff;
-}
-
-.home .btn-primary:hover {
-  background: var(--accent);
-  color: #ffffff;
-  filter: brightness(.95);
 }
 
 .home .card { text-decoration: none; }
@@ -88,10 +42,11 @@
   font-size: 13px;
 }
 
-@media (max-width: 700px) {
-  .home .home-theme-label { display: none; }
-  .home .home-theme select { max-width: 72px; }
-}
+.home .home-footer a { color: var(--accent); }
+.home .home-footer a:hover { text-decoration: underline; }
+
+/* 主页只复用 oi-docs 的“外观设置”面板，保留主题选择。 */
+.home .settings-panel { max-height: calc(100vh - 64px); overflow: auto; }
 
 @media (max-width: 600px) {
   .home .brand .logo { display: grid; }
