@@ -1,6 +1,6 @@
 # OI 文档
 
-静态 OI 文档站点，部署在 GitHub Pages。页面从站点同源索引读取 Markdown 文档，并提供多关键词全文搜索、分类与标签筛选、文内目录、代码高亮和公式渲染。
+静态 OI 文档站点，同时部署在 GitHub Pages 与 Cloudflare Workers。页面从站点同源索引读取 Markdown 文档，并提供多关键词全文搜索、分类与标签筛选、文内目录、代码高亮和公式渲染。
 
 当前仓库为 `lcd-xvii/lcd-xvii.github.io`，本文档站位于仓库的 `oi-docs/` 子目录，线上路径为：
 
@@ -10,7 +10,7 @@
 ## 项目结构
 
 - `index.html`：中文页面骨架与主题预载。
-- `assets/css/app.css`：Rust 文档风格的布局、主题和响应式样式。
+- `../assets/css/app.css`：与主页共用的 Rust 文档风格样式。
 - `assets/js/app.js`：文档索引、路由、搜索与页面交互。
 - `assets/js/keybindings.js`：快捷键配置及帮助页展示所用的统一定义。
 - `assets/js/markdown.js`：Markdown、KaTeX 和代码高亮配置。
