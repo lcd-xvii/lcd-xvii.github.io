@@ -1,7 +1,7 @@
 import { readdir, readFile, writeFile } from 'node:fs/promises';
 import { join, relative, sep } from 'node:path';
 
-const ROOT = process.cwd();
+const ROOT = join(process.cwd(), 'oi-docs');
 const EXCLUDE_DIRS = new Set(['.git', 'node_modules', '.github', 'vendor']);
 
 async function walk(dir, out = []) {

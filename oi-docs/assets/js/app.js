@@ -7,9 +7,10 @@ import { KEYBINDINGS } from './keybindings.js';
  * ================================================================ */
 const CONFIG = {
   owner:  'lcd-xvii',
-  repo:   'oi-docs',
+  repo:   'lcd-xvii.github.io',
   branch: 'main',
-  contentRoot: '',
+  // 文档站在仓库中的子目录；站点 URL 前缀由 import.meta.url 自动推导。
+  contentRoot: 'oi-docs',
   treeCacheTTL: 10 * 60 * 1000,
   docCacheTTL:  24 * 60 * 60 * 1000,
 };
@@ -25,10 +26,10 @@ const CATEGORY_META = {
  * 4. 基础设施
  * ================================================================ */
 const $ = s => document.querySelector(s);
-const ROOT = CONFIG.contentRoot ? CONFIG.contentRoot.replace(/^\/+|\/+$/g, '') + '/' : '';
+const CONTENT_ROOT = CONFIG.contentRoot ? CONFIG.contentRoot.replace(/^\/+|\/+$/g, '') + '/' : '';
 const SITE_BASE = new URL('../../', import.meta.url).href;
 const API_BASE = `https://api.github.com/repos/${CONFIG.owner}/${CONFIG.repo}`;
-const CACHE_KEY = `oi-docs-tree:${CONFIG.owner}/${CONFIG.repo}/${CONFIG.branch}/${ROOT}`;
+const CACHE_KEY = `oi-docs-tree:${CONFIG.owner}/${CONFIG.repo}/${CONFIG.branch}/${CONTENT_ROOT}`;
 const escapeHtml = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const encodePath = p => p.split('/').map(encodeURIComponent).join('/');
 const resolvePath = (dir, rel) => { const out=[]; (dir+rel).split('/').forEach(p=>{if(!p||p==='.')return;if(p==='..')out.pop();else out.push(p);}); return out.join('/'); };
@@ -75,7 +76,7 @@ async function fetchTree(force = false) {
 async function fetchMarkdown(path) {
   const cached = await idb.get('docs', path);
   if (cached && Date.now() - cached.time < CONFIG.docCacheTTL) return cached.text;
-  const res = await fetch(SITE_BASE + encodePath(ROOT + path), { cache: 'no-cache' });
+  const res = await fetch(SITE_BASE + encodePath(path), { cache: 'no-cache' });
   if (!res.ok) {
     if (cached) return cached.text;
     throw new Error(`HTTP ${res.status} — ${path}`);
@@ -127,8 +128,8 @@ function buildDocs(tree) {
     .filter(t => t.type === 'blob' && /\.md$/i.test(t.path))
     .filter(t => !t.path.split('/').some(seg => seg.startsWith('.')))
     .filter(t => !/^_/.test(t.path.split('/').pop()))
-    .filter(t => !ROOT || t.path.startsWith(ROOT))
-    .map(t => ROOT ? t.path.slice(ROOT.length) : t.path);
+    .filter(t => !CONTENT_ROOT || t.path.startsWith(CONTENT_ROOT))
+    .map(t => CONTENT_ROOT ? t.path.slice(CONTENT_ROOT.length) : t.path);
 
   const groups = new Map();
   for (const path of blobs) {
@@ -144,8 +145,7 @@ function buildDocs(tree) {
 function buildFromManifest(manifest) {
   const groups = new Map();
   for (const d of manifest.docs || []) {
-    if (ROOT && !d.path.startsWith(ROOT)) continue;
-    const path = ROOT ? d.path.slice(ROOT.length) : d.path;
+    const path = d.path;
     const parts = path.split('/');
     const catName = parts.length === 1 ? '杂项' : parts[0];
     if (!groups.has(catName)) groups.set(catName, []);
@@ -290,9 +290,9 @@ function fixLinks(root, mdPath) {
       const target = resolvePath(dir, rawPath);
       const isInternal = ITEM_MAP.has(target);
       if (isInternal) a.setAttribute('href', '#' + encodeURIComponent(target) + (anchor ? '#' + anchor : ''));
-      else { a.setAttribute('href', `https://github.com/${CONFIG.owner}/${CONFIG.repo}/blob/${CONFIG.branch}/` + encodePath(ROOT + target) + (anchor ? '#' + anchor : '')); a.target = '_blank'; }
+      else { a.setAttribute('href', `https://github.com/${CONFIG.owner}/${CONFIG.repo}/blob/${CONFIG.branch}/` + encodePath(CONTENT_ROOT + target) + (anchor ? '#' + anchor : '')); a.target = '_blank'; }
     } else {
-      a.setAttribute('href', SITE_BASE + encodePath(ROOT + resolvePath(dir, rawPath)) + (anchor ? '#' + anchor : ''));
+      a.setAttribute('href', SITE_BASE + encodePath(resolvePath(dir, rawPath)) + (anchor ? '#' + anchor : ''));
       a.target = '_blank';
     }
   });
@@ -300,7 +300,7 @@ function fixLinks(root, mdPath) {
     const src = img.getAttribute('src');
     if (!src || /^[a-z][a-z0-9+.-]*:/i.test(src) || src.startsWith('//')) return;
     const rel = src.startsWith('/') ? src.slice(1) : resolvePath(dir, src);
-    img.setAttribute('src', SITE_BASE + encodePath(ROOT + rel));
+    img.setAttribute('src', SITE_BASE + encodePath(rel));
   });
 }
 

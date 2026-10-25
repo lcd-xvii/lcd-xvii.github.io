@@ -2,6 +2,11 @@
 
 静态 OI 文档站点，部署在 GitHub Pages。页面从站点同源索引读取 Markdown 文档，并提供多关键词全文搜索、分类与标签筛选、文内目录、代码高亮和公式渲染。
 
+当前仓库为 `lcd-xvii/lcd-xvii.github.io`，本文档站位于仓库的 `oi-docs/` 子目录，线上路径为：
+
+- <https://lcd-xvii.com/oi-docs/>
+- <https://lcd-xvii.github.io/oi-docs/>
+
 ## 项目结构
 
 - `index.html`：中文页面骨架与主题预载。
@@ -17,7 +22,7 @@
 
 ## 本地预览
 
-在仓库根目录启动静态 HTTP 服务后访问 `http://localhost:8000`：
+在仓库根目录启动静态 HTTP 服务后访问 `http://localhost:8000/oi-docs/`：
 
 ```sh
 python3 -m http.server 8000

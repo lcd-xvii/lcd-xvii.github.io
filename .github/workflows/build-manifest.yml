@@ -4,7 +4,8 @@ on:
   push:
     branches: [main]
     paths:
-      - '**.md'
+      - 'oi-docs/*.md'
+      - 'oi-docs/**/*.md'
       - '.github/scripts/build-manifest.mjs'
       - '.github/workflows/build-manifest.yml'
   workflow_dispatch:
@@ -26,10 +27,10 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add manifest.json search-index.json
+          git add oi-docs/manifest.json oi-docs/search-index.json
           if git diff --staged --quiet; then
             echo "No changes"
           else
-            git commit -m "chore: update docs manifest [skip ci]"
+            git commit -m "chore: update oi-docs manifest [skip ci]"
             git push
           fi
