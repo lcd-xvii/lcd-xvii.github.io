@@ -1,58 +1,284 @@
-/* 主页样式：复用 oi-docs 的 rustdoc 风格，但禁用动画与过渡。 */
+/* ============================================================
+ * 主页样式（依赖 tokens.css）
+ * ------------------------------------------------------------
+ * 布局参考 GitHub 主页：左侧身份栏（头像 / 名字 / 简介 / 联系），
+ * 右侧顶部是入口卡片，右侧下部是贡献墙与最近更新。
+ * 入口用卡片，联系不用卡片（只是带细线的文字行）。
+ * ============================================================ */
 
-.home *,
-.home *::before,
-.home *::after {
-  transition: none !important;
-  animation: none !important;
+/* ---------- 顶栏 ---------- */
+.topbar{
+  position:sticky;top:0;z-index:50;
+  border-bottom:var(--line) solid var(--border);
+  background:var(--bg);
+  background:color-mix(in srgb,var(--bg) 92%,transparent);
+  backdrop-filter:saturate(140%) blur(6px);
+}
+.topbar-inner{
+  display:flex;align-items:center;gap:24px;
+  max-width:var(--maxw);margin:0 auto;
+  padding:0 var(--gutter);
+  height:var(--topbar-h);
+}
+.wordmark{
+  font-size:var(--text-ui);
+  font-weight:600;
+  letter-spacing:-.01em;
+  transition:color var(--t-fast) var(--ease);
+}
+.wordmark:hover{color:var(--accent-ink)}
+.nav{display:flex;align-items:center;gap:24px;margin-left:auto}
+.nav a{
+  font-size:var(--text-meta);
+  color:var(--ink-2);
+  transition:color var(--t-fast) var(--ease);
+}
+.nav a:hover{color:var(--accent-ink)}
+
+/* ---------- 版心与两栏 ---------- */
+.wrap{
+  width:100%;max-width:var(--maxw);
+  margin:0 auto;
+  padding:clamp(32px,4vw,56px) var(--gutter) clamp(40px,5vw,64px);
+}
+.profile{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:32px;
+}
+@media (min-width:860px){
+  .profile{grid-template-columns:296px minmax(0,1fr)}
 }
 
-.home .topbar { gap: 6px; }
-.home .brand { text-decoration: none; }
-.home .brand:hover { text-decoration: none; }
-
-.home .welcome-page { padding-bottom: 40px; }
-.home .hero { padding-top: 40px; }
-
-.home .btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  text-decoration: none;
+/* ---------- 左：身份栏 ---------- */
+.avatar{
+  display:block;
+  width:260px;height:260px;
+  object-fit:cover;
+  border-radius:50%;
+  border:var(--line) solid var(--border);
+  background:var(--surface);
+}
+.rail .name{
+  margin:24px 0 6px;
+  font-size:var(--text-display);
+  font-weight:600;
+  line-height:var(--leading-display);
+  letter-spacing:-.028em;
+}
+.rail .tagline{
+  margin:0 0 12px;
+  font-size:var(--text-body);
+  color:var(--ink);
+}
+.rail .tagline em{
+  font-style:normal;
+  font-weight:500;
+  color:var(--accent-ink);
+}
+.rail .bio{
+  margin:0;
+  font-size:var(--text-body);
+  line-height:1.7;
+  color:var(--ink-2);
 }
 
-.home .card { text-decoration: none; }
-.home .card:hover { text-decoration: none; }
-.home .card-icon { width: 20px; height: 20px; }
-
-.home .home-prose {
-  max-width: 760px;
-  color: var(--text-soft);
+/* 药丸：语言 / 标签 */
+.pills{display:flex;flex-wrap:wrap;gap:8px;margin:24px 0 0;padding:0;list-style:none}
+.pill{
+  display:inline-flex;align-items:center;
+  padding:4px 12px;
+  border-radius:var(--radius-pill);
+  background:var(--accent-tint);
+  color:var(--accent-ink);
+  font-size:var(--text-meta);
+  font-weight:500;
 }
 
-.home .home-prose p { margin: 0 0 10px; }
-.home .home-prose strong { color: var(--text); font-weight: 600; }
-.home .home-tags { margin: 14px 0 0; }
+/* 联系：不是卡片，只是带细线的文字行 */
+.contact{
+  margin:32px 0 0;padding:16px 0 0;
+  border-top:var(--line) solid var(--border);
+  list-style:none;
+}
+.contact li{display:flex;align-items:baseline;gap:10px;padding:8px 0}
+.contact .k{font-size:var(--text-meta);color:var(--ink-3)}
+.contact .v{
+  margin-left:auto;
+  font-size:var(--text-meta);
+  color:var(--ink-2);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.contact a{transition:color var(--t-fast) var(--ease)}
+.contact a:hover{color:var(--accent-ink);text-decoration:underline;text-underline-offset:3px}
 
-.home .home-footer {
-  margin-top: 38px;
-  padding-top: 16px;
-  border-top: 1px solid var(--border);
-  color: var(--text-soft);
-  font-size: 13px;
+/* ---------- 右：卡片列 ---------- */
+.col{min-width:0}
+.block + .block{margin-top:clamp(32px,3.4vw,44px)}
+.block h2{margin:0 0 20px}
+
+.cards{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr));
+  gap:20px;
+}
+.card{
+  display:flex;flex-direction:column;gap:10px;
+  padding:24px;
+  border:var(--line) solid var(--border);
+  border-radius:var(--radius);
+  background:var(--surface);
+  transition:
+    transform var(--t-card) var(--ease),
+    border-color var(--t-fast) var(--ease);
+}
+a.card:hover{
+  transform:translateY(-2px);
+  border-color:var(--border-hover);
+}
+.card-title{font-size:var(--text-title);font-weight:600;letter-spacing:-.012em;line-height:1.35}
+.card-desc{font-size:var(--text-ui);line-height:1.6;color:var(--ink-2)}
+.card-foot{margin-top:auto;padding-top:6px}
+
+/* 箭头链接 */
+.arrow{
+  display:inline-flex;align-items:center;gap:7px;
+  font-size:var(--text-meta);
+  font-weight:500;
+  color:var(--ink-2);
+  text-decoration:underline;
+  text-decoration-thickness:1px;
+  text-underline-offset:5px;
+  text-decoration-color:transparent;
+  transition:text-decoration-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease);
+}
+.arrow::after{content:"\2192";color:var(--accent)}
+.arrow:hover{color:var(--accent-ink);text-decoration-color:currentColor}
+
+/* ---------- 贡献墙 ---------- */
+.wall{
+  display:grid;
+  grid-auto-flow:column;
+  grid-template-rows:repeat(7,1fr);
+  gap:2px;
+  justify-content:start;
+  padding-bottom:2px;
+  overflow-x:auto;
+  scrollbar-width:thin;
+}
+.wall i{
+  display:block;
+  width:var(--wall-cell);
+  height:var(--wall-cell);
+  border-radius:2px;
+  background:var(--wall-0);
+}
+.wall i[data-level="1"]{background:var(--wall-1)}
+.wall i[data-level="2"]{background:var(--wall-2)}
+.wall i[data-level="3"]{background:var(--wall-3)}
+.wall-meta{
+  display:flex;align-items:center;justify-content:space-between;gap:16px;
+  margin:12px 0 0;
+  font-size:var(--text-meta);
+  color:var(--ink-3);
+  font-variant-numeric:tabular-nums;
+}
+.wall-legend{display:inline-flex;align-items:center;gap:5px}
+.wall-legend i{
+  display:block;width:12px;height:12px;border-radius:2px;background:var(--wall-0);
+}
+.wall-legend i[data-level="1"]{background:var(--wall-1)}
+.wall-legend i[data-level="2"]{background:var(--wall-2)}
+.wall-legend i[data-level="3"]{background:var(--wall-3)}
+
+/* ---------- 最近：可来自任一入口卡片 ---------- */
+.sub{
+  margin:40px 0 4px;
+  font-size:var(--text-meta);
+  font-weight:500;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  color:var(--ink-3);
+}
+.recent{list-style:none;margin:0;padding:0}
+.recent li{border-bottom:var(--line) solid var(--border)}
+.recent li:first-child{border-top:var(--line) solid var(--border)}
+.recent a{
+  display:flex;align-items:baseline;gap:16px;
+  padding:16px 2px;
+}
+.recent .src{
+  flex:none;
+  font-size:var(--text-meta);
+  color:var(--ink-3);
+  white-space:nowrap;
+}
+.recent .t{
+  flex:1;min-width:0;
+  font-size:var(--text-ui);
+  font-weight:500;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  transition:color var(--t-fast) var(--ease);
+}
+.recent .d{
+  flex:none;
+  font-size:var(--text-meta);
+  color:var(--ink-3);
+  font-variant-numeric:tabular-nums;
+  white-space:nowrap;
+}
+.recent a:hover .t,
+.recent a:hover .d{color:var(--accent-ink)}
+.recent-empty{
+  margin:0;padding:16px 2px;
+  border-top:var(--line) solid var(--border);
+  border-bottom:var(--line) solid var(--border);
+  font-size:var(--text-meta);
+  color:var(--ink-3);
 }
 
-.home .home-footer a { color: var(--accent); }
-.home .home-footer a:hover { text-decoration: underline; }
+/* ---------- 页脚 ---------- */
+.foot{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:16px;flex-wrap:wrap;
+  margin-top:clamp(48px,5vw,64px);
+  padding-top:24px;
+  border-top:var(--line) solid var(--border);
+  font-size:var(--text-meta);
+  color:var(--ink-3);
+  font-variant-numeric:tabular-nums;
+}
+.foot a{
+  color:var(--ink-3);
+  text-decoration:underline;
+  text-decoration-thickness:1px;
+  text-underline-offset:4px;
+  text-decoration-color:transparent;
+  transition:text-decoration-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease);
+}
+.foot a:hover{color:var(--accent-ink);text-decoration-color:currentColor}
 
-/* 主页只复用 oi-docs 的“外观设置”面板，保留主题选择。 */
-.home .settings-panel { max-height: calc(100vh - 64px); overflow: auto; }
-
-@media (max-width: 600px) {
-  .home .brand .logo { display: grid; }
+/* ---------- 滚动淡入 ---------- */
+.reveal{
+  opacity:0;
+  transform:translateY(12px);
+  transition:
+    opacity var(--t-reveal) var(--ease),
+    transform var(--t-reveal) var(--ease);
+  transition-delay:calc(var(--i,0) * 70ms);
+}
+.reveal.is-in{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){
+  .reveal{opacity:1;transform:none;transition:none}
 }
 
-@media (max-width: 520px) {
-  .home .topbar { gap: 4px; }
-  .home .brand span:last-child { display: none; }
+/* ---------- 响应式 ---------- */
+@media (max-width:859px){
+  .avatar{width:160px;height:160px}
+  .rail .name{margin-top:16px}
+  .nav{display:none}
+  :root{--topbar-h:56px}
+}
+@media (max-width:560px){
+  .recent .src{display:none}   /* 窄屏只留标题与日期 */
 }

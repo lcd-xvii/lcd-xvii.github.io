@@ -1,133 +1,105 @@
 <!DOCTYPE html>
-<html lang="zh-CN" data-theme="light">
+<html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>lcd-xvii</title>
-<meta name="description" content="lcd-xvii 的个人主页：OI 文档、项目与联系方式。">
-<meta property="og:title" content="lcd-xvii">
-<meta property="og:description" content="lcd-xvii 的个人主页">
-<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<meta name="description" content="lcd-xvii：OI 题解、周总结与算法笔记。">
+<meta name="color-scheme" content="light">
+<link rel="icon" href="assets/1.jpg" type="image/jpeg">
+<link rel="apple-touch-icon" href="assets/1.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@400;500;600;700&family=Source+Code+Pro:wght@400;600&display=swap" rel="stylesheet">
-<script>
-(function () {
-  try {
-    var saved = localStorage.getItem('oi-docs-theme');
-    if (saved === 'light' || saved === 'dark' || saved === 'ayu') {
-      document.documentElement.dataset.theme = saved;
-    }
-  } catch (e) {}
-})();
-</script>
-<link rel="stylesheet" href="assets/css/app.css?v=20261025-shared-1">
-<link rel="stylesheet" href="assets/css/home.css?v=20261025-2">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/tokens.css?v=20261111-3">
+<link rel="stylesheet" href="assets/css/home.css?v=20261111-3">
 </head>
-<body class="home">
+<body>
 
 <a class="skip-main-content" href="#main-content">跳转到正文</a>
 
 <header class="topbar">
-  <a class="brand" href="/" aria-label="lcd-xvii 首页">
-    <span class="logo">LX</span>
-    <span>lcd-xvii</span>
-  </a>
-  <div class="spacer"></div>
-  <div class="settings-wrap">
-    <button class="btn toolbar-button" id="settingsBtn" type="button" title="外观设置" aria-label="外观设置" aria-expanded="false" aria-controls="settingsPanel">
-      <svg class="toolbar-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Z"/><path d="m19.4 15 .1.1 1.2 1-1.2 2.1-1.5-.6a8 8 0 0 1-1.5.9l-.3 1.6h-2.4l-.3-1.6a8 8 0 0 1-1.7-.1l-1.1 1.2-2.1-1.2.6-1.5a8 8 0 0 1-.9-1.5l-1.6-.3v-2.4l1.6-.3a8 8 0 0 1 .1-1.7L5.2 9.6l1.2-2.1 1.5.6a8 8 0 0 1 1.5-.9l.3-1.6h2.4l.3 1.6a8 8 0 0 1 1.7.1l1.1-1.2 2.1 1.2-.6 1.5a8 8 0 0 1 .9 1.5l1.6.3V13l-1.6.3a8 8 0 0 1-.2 1.7Z"/></svg>
-      <span>设置</span>
-    </button>
-    <section class="settings-panel" id="settingsPanel" aria-label="外观设置" hidden>
-      <h2>外观设置</h2>
-      <fieldset>
-        <legend>主题</legend>
-        <div class="theme-options">
-          <button type="button" data-theme-choice="light">浅色</button>
-          <button type="button" data-theme-choice="dark">深色</button>
-          <button type="button" data-theme-choice="ayu">Ayu</button>
-        </div>
-      </fieldset>
-    </section>
+  <div class="topbar-inner">
+    <a class="wordmark" href="/">lcd-xvii</a>
+    <nav class="nav" aria-label="主导航">
+      <a href="#entry">入口</a>
+      <a href="#activity">最近</a>
+      <a href="#contact">联系</a>
+    </nav>
   </div>
 </header>
 
-<main id="main-content">
-  <div class="article welcome-page home-page">
+<main class="wrap" id="main-content">
+  <div class="profile">
 
-    <div class="hero">
-      <p class="eyebrow">LCD-XVII</p>
-      <h1>lcd-xvii</h1>
-      <p>一个人。</p>
-    </div>
+    <!-- 左：身份 -->
+    <aside class="rail reveal" aria-label="身份与联系">
+      <img class="avatar" src="assets/1.jpg" alt="lcd-xvii 的头像" width="260" height="260" decoding="async">
+      <h1 class="name">lcd-xvii</h1>
+      <p class="tagline">一个人，<em>慢慢写</em>。</p>
+      <p class="bio">写题、读源码，记下想不明白的地方。文档和笔记都留在这里。</p>
 
-    <div class="welcome-section">
-      <h2>入口</h2>
-      <div class="card-grid">
-        <a class="card" href="/oi-docs/">
-          <svg class="card-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3.5h9l5 5v12H5z"/><path d="M14 3.5v5h5M8 13h8M8 16.5h8"/></svg>
-          <span class="card-copy">
+      <ul class="pills">
+        <li class="pill">Rust</li>
+        <li class="pill">C / C++</li>
+        <li class="pill">Python</li>
+      </ul>
+
+      <ul class="contact" id="contact">
+        <li>
+          <span class="k">Email</span>
+          <a class="v" href="mailto:lcd-xvii@outlook.com">lcd-xvii@outlook.com</a>
+        </li>
+        <li>
+          <span class="k">GitHub</span>
+          <a class="v" href="https://github.com/lcd-xvii" target="_blank" rel="noopener">@lcd-xvii</a>
+        </li>
+      </ul>
+    </aside>
+
+    <!-- 右：入口卡片 + 贡献墙 + 最近 -->
+    <div class="col">
+
+      <section class="block" id="entry" aria-labelledby="entry-h">
+        <h2 id="entry-h" class="reveal">入口</h2>
+        <div class="cards">
+          <a class="card reveal" style="--i:1" href="oi-docs/">
             <span class="card-title">OI 文档</span>
-            <span class="card-description">题解、周总结与算法理论</span>
+            <span class="card-desc">题解、总结与算法理论，按分类归档。</span>
+            <span class="card-foot"><span class="arrow">进入</span></span>
+          </a>
+        </div>
+      </section>
+
+      <section class="block" id="activity" aria-labelledby="activity-h">
+        <h2 id="activity-h" class="reveal">贡献</h2>
+        <div class="wall reveal" id="wall" data-wall role="img" aria-label="过去一年的更新记录"></div>
+        <p class="wall-meta reveal">
+          <span id="wallCount">过去一年</span>
+          <span class="wall-legend" aria-hidden="true">
+            少
+            <i data-level="0"></i><i data-level="1"></i><i data-level="2"></i><i data-level="3"></i>
+            多
           </span>
-          <span class="card-arrow" aria-hidden="true">›</span>
-        </a>
-      </div>
+        </p>
+
+        <p class="sub reveal">最近</p>
+        <ol class="recent reveal" id="recent"></ol>
+      </section>
+
     </div>
-
-    <div class="welcome-section">
-      <h2>关于</h2>
-      <div class="home-prose">
-        <p>我是 <strong>lcd-xvii</strong>，一个人。</p>
-      </div>
-      <div class="tag-list home-tags">
-        <span class="tag">Rust</span>
-        <span class="tag">C/C++</span>
-        <span class="tag">Python</span>
-      </div>
-    </div>
-
-    <div class="welcome-section">
-      <h2>项目</h2>
-      <div class="card-grid">
-        <a class="card" href="https://github.com/lcd-xvii?tab=repositories" target="_blank" rel="noopener">
-          <svg class="card-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 6.5h6l2 2h9v10h-17z"/><path d="M3.5 8.5h17"/></svg>
-          <span class="card-copy">
-            <span class="card-title">GitHub 仓库</span>
-            <span class="card-description">查看全部开源项目</span>
-          </span>
-          <span class="card-arrow" aria-hidden="true">›</span>
-        </a>
-      </div>
-    </div>
-
-    <div class="welcome-section">
-      <h2>联系</h2>
-      <div class="card-grid">
-        <a class="card" href="mailto:lcd-xvii@outlook.com">
-          <svg class="card-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="3"/><path d="m3 7 8.2 5.6a1.5 1.5 0 0 0 1.6 0L21 7"/></svg>
-          <span class="card-copy">
-            <span class="card-title">Email</span>
-            <span class="card-description">lcd-xvii@outlook.com</span>
-          </span>
-          <span class="card-arrow" aria-hidden="true">›</span>
-        </a>
-      </div>
-    </div>
-
-    <footer class="home-footer">
-      © <span id="year">2026</span> lcd-xvii ·
-      <a id="backupLink" href="https://lcd-xvii.com/" data-long="true">
-        <span id="backupLabel">Cloudflare 主站</span>
-      </a>
-    </footer>
-
   </div>
+
+  <footer class="foot">
+    <span>© <span id="year">2026</span> lcd-xvii</span>
+    <a id="backupLink" href="https://lcd-xvii.com/" data-long="true">
+      <span id="backupLabel">Cloudflare 主站</span>
+    </a>
+  </footer>
 </main>
 
 <script src="assets/js/backup.js?v=20261025-2"></script>
-<script src="assets/js/home.js?v=20261025-2"></script>
+<script src="assets/js/home.js?v=20261111-3"></script>
 
 </body>
 </html>

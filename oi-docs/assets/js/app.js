@@ -724,7 +724,6 @@ const layout = document.querySelector('.layout');
 const sidebarResizer = $('#sidebarResizer');
 const settingsPanel = $('#settingsPanel');
 const settingsButton = $('#settingsBtn');
-const THEMES = ['light', 'dark', 'ayu'];
 
 function updateSidebarToggle() {
   const visible = window.matchMedia('(min-width: 861px)').matches
@@ -776,7 +775,7 @@ helpDialog.addEventListener('click', event => {
 const SETTINGS_KEY = 'oi-docs-settings';
 const PREFERENCES_VERSION = 2;
 const VALID_FONT_SIZES = ['16', '18', '20', '22'];
-const VALID_WIDTHS = ['720', '960', '1200', 'full'];
+const VALID_WIDTHS = ['680', '780', '960', 'full'];
 const preferences = (() => {
   let saved = {};
   try {
@@ -787,35 +786,25 @@ const preferences = (() => {
   if (!saved || typeof saved !== 'object') saved = {};
   const savedFontSize = String(saved.fontSize);
   return {
-    theme: THEMES.includes(saved.theme) ? saved.theme :
-      (THEMES.includes(localStorage.getItem('oi-docs-theme')) ? localStorage.getItem('oi-docs-theme') : 'light'),
-    font: saved.font === 'serif' ? 'serif' : 'sans',
     fontSize: VALID_FONT_SIZES.includes(savedFontSize)
       ? (saved.version === PREFERENCES_VERSION || savedFontSize !== '16' ? savedFontSize : '18')
       : '18',
-    contentWidth: VALID_WIDTHS.includes(String(saved.contentWidth)) ? String(saved.contentWidth) : '960',
+    contentWidth: VALID_WIDTHS.includes(String(saved.contentWidth)) ? String(saved.contentWidth) : '780',
     wrapCode: saved.wrapCode === true,
-    sidebarWidth: Number.isFinite(saved.sidebarWidth) ? Math.min(420, Math.max(180, saved.sidebarWidth)) : 250,
+    sidebarWidth: Number.isFinite(saved.sidebarWidth) ? Math.min(420, Math.max(220, saved.sidebarWidth)) : 296,
   };
 })();
 
 function savePreferences() {
   localStorage.setItem(SETTINGS_KEY, JSON.stringify({ ...preferences, version: PREFERENCES_VERSION }));
-  localStorage.setItem('oi-docs-theme', preferences.theme);
 }
 
 function applyPreferences(persist = true) {
   const root = document.documentElement;
-  root.dataset.theme = preferences.theme;
-  root.dataset.font = preferences.font;
   root.dataset.wrapCode = String(preferences.wrapCode);
   root.style.setProperty('--reading-size', `${preferences.fontSize}px`);
   root.style.setProperty('--article-max-width', preferences.contentWidth === 'full' ? 'none' : `${preferences.contentWidth}px`);
   root.style.setProperty('--sidebar-w', `${preferences.sidebarWidth}px`);
-  document.querySelectorAll('[data-theme-choice]').forEach(button => {
-    button.setAttribute('aria-pressed', String(button.dataset.themeChoice === preferences.theme));
-  });
-  $('#fontFamily').value = preferences.font;
   $('#fontSize').value = preferences.fontSize;
   $('#contentWidth').value = preferences.contentWidth;
   $('#wrapCode').checked = preferences.wrapCode;
@@ -825,24 +814,15 @@ function applyPreferences(persist = true) {
 
 applyPreferences(false);
 updateSidebarToggle();
-document.querySelectorAll('[data-theme-choice]').forEach(button => {
-  button.addEventListener('click', () => {
-    preferences.theme = button.dataset.themeChoice;
-    applyPreferences();
-  });
-});
-$('#fontFamily').addEventListener('change', event => { preferences.font = event.target.value; applyPreferences(); });
 $('#fontSize').addEventListener('change', event => { preferences.fontSize = event.target.value; applyPreferences(); });
 $('#contentWidth').addEventListener('change', event => { preferences.contentWidth = event.target.value; applyPreferences(); });
 $('#wrapCode').addEventListener('change', event => { preferences.wrapCode = event.target.checked; applyPreferences(); });
 $('#resetSettings').addEventListener('click', () => {
   Object.assign(preferences, {
-    theme: 'light',
-    font: 'sans',
     fontSize: '18',
-    contentWidth: '960',
+    contentWidth: '780',
     wrapCode: false,
-    sidebarWidth: 250,
+    sidebarWidth: 296,
   });
   applyPreferences();
 });
@@ -894,12 +874,6 @@ function showHelp() {
   requestAnimationFrame(() => $('#helpClose').focus());
 }
 
-function toggleTheme() {
-  const themeIndex = THEMES.indexOf(preferences.theme);
-  preferences.theme = THEMES[(themeIndex + 1) % THEMES.length];
-  applyPreferences();
-}
-
 function closePanels(target) {
   toggleSettings(false);
   hideSearchResults();
@@ -942,9 +916,8 @@ const SHORTCUT_ACTIONS = {
   settings: () => toggleSettings(),
   help: showHelp,
   toc: showTOC,
-  sync: () => $('#refreshBtn').click(),
+  sync: () => $('#syncBtn').click(),
   search: showSearch,
-  theme: toggleTheme,
   fontIncrease: () => adjustFontSize(1),
   fontDecrease: () => adjustFontSize(-1),
   widthIncrease: () => adjustContentWidth(1),
@@ -1062,8 +1035,8 @@ async function loadContent() {
   await onHashChange();
 }
 
-$('#refreshBtn').addEventListener('click', async () => {
-  $('#refreshBtn').disabled = true;
+$('#syncBtn').addEventListener('click', async () => {
+  $('#syncBtn').disabled = true;
   try {
     await idb.clear('docs');
     await idb.clear('meta');
@@ -1074,7 +1047,7 @@ $('#refreshBtn').addEventListener('click', async () => {
   } catch (err) {
     showError(`<strong>同步失败</strong><br>${escapeHtml(err.message)}`);
   } finally {
-    $('#refreshBtn').disabled = false;
+    $('#syncBtn').disabled = false;
   }
 });
 

@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>UI 方向预览 二 · lcd-xvii</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@400;500;600&family=Inter:wght@400;500;600&family=Source+Code+Pro:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --p-bg:#f4f4f5; --p-card:#ffffff; --p-tx:#18181b; --p-tx2:#71717a;
+  --p-line:#e4e4e7; --p-line-strong:#d4d4d8;
+  --mono:'Source Code Pro',ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+[data-theme="dark"]{
+  --p-bg:#0c0c0e; --p-card:#141417; --p-tx:#f4f4f5; --p-tx2:#8e8e96;
+  --p-line:#26262b; --p-line-strong:#34343b;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--p-bg); color:var(--p-tx);
+  font:15px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;
+  -webkit-font-smoothing:antialiased;
+  transition:background-color .2s ease,color .2s ease;
+}
+.wrap{max-width:1240px;margin:0 auto;padding:40px 24px 96px}
+
+.page-head{display:flex;align-items:flex-end;gap:20px;flex-wrap:wrap;padding-bottom:20px;border-bottom:1px solid var(--p-line-strong)}
+.page-head h1{margin:0;font-size:24px;font-weight:600;letter-spacing:-.01em}
+.page-head .kicker{margin:0 0 6px;font:500 11px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--p-tx2)}
+.page-head .grow{flex:1}
+.page-head p{margin:0;max-width:44ch;color:var(--p-tx2);font-size:13px}
+.head-actions{display:flex;gap:8px;align-items:center}
+.toggle,.navlink{
+  height:32px;display:inline-flex;align-items:center;padding:0 12px;
+  border:1px solid var(--p-line-strong);border-radius:4px;background:var(--p-card);
+  color:var(--p-tx);font:inherit;font-size:13px;text-decoration:none;cursor:pointer;
+}
+.toggle:hover,.navlink:hover{border-color:var(--p-tx2)}
+
+.tiles{display:grid;gap:28px;margin-top:32px}
+@media (min-width:1000px){.tiles{grid-template-columns:repeat(2,1fr);align-items:start;gap:24px}}
+
+.tile{border:1px solid var(--p-line-strong);border-radius:10px;background:var(--p-card);overflow:hidden}
+.tile-head{padding:16px 18px 14px;border-bottom:1px solid var(--p-line)}
+.tile-head .row1{display:flex;align-items:baseline;gap:9px}
+.tile-head .idx{font:500 11px var(--mono);letter-spacing:.1em;color:var(--p-tx2)}
+.tile-head h2{margin:0;font-size:17px;font-weight:600}
+.tile-head .claim{margin:5px 0 0;font-size:13px;line-height:1.55;color:var(--p-tx2)}
+
+.swatches{display:flex;padding:14px 18px;border-bottom:1px solid var(--p-line)}
+.sw{flex:1;min-width:0}
+.sw i{display:block;height:34px;border-radius:3px;border:1px solid rgba(0,0,0,.08)}
+[data-theme="dark"] .sw i{border-color:rgba(255,255,255,.09)}
+.sw b{display:block;margin-top:5px;font:400 9px var(--mono);color:var(--p-tx2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+.spec{margin:0;padding:12px 18px 14px;border-bottom:1px solid var(--p-line);display:grid;gap:4px}
+.spec div{display:flex;gap:10px;font-size:12px;line-height:1.5}
+.spec dt{flex:0 0 44px;color:var(--p-tx2)}
+.spec dd{margin:0;color:var(--p-tx)}
+
+/* 共用的主页骨架 */
+.mock{--pad:22px}
+.mock-bar{display:flex;align-items:center;gap:8px;height:40px;padding:0 14px;border-bottom:1px solid var(--line);background:var(--bg)}
+.mock-bar .logo{display:grid;place-items:center;flex:none;font-weight:600;line-height:1}
+.mock-bar .name{font-size:13px;font-weight:500;color:var(--ink)}
+.mock-bar .spacer{flex:1}
+.mock-bar .ghost{font-size:11px;color:var(--ink-2)}
+.mock-body{padding:var(--pad);background:var(--bg);color:var(--ink)}
+.mock-body .eyebrow{margin:0 0 6px;font-size:10px;letter-spacing:.12em;text-transform:uppercase;font-family:var(--font-mono);color:var(--ink-2)}
+.mock-body h3{margin:0 0 6px;color:var(--ink)}
+.mock-body .sub{margin:0 0 22px;font-size:14px;color:var(--ink-2)}
+
+.sec{margin:0 0 20px}
+.sec > h4{margin:0 0 8px;color:var(--ink-2)}
+.row{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink)}
+.row-ic{flex:none;width:16px;height:16px;display:grid;place-items:center}
+.row-ic svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.row-tx{display:grid;gap:1px;flex:1;min-width:0}
+.row-t{font-size:14px;color:var(--ink)}
+.row-d{font-size:12px;color:var(--ink-2)}
+.row-n{font-size:11px;color:var(--ink-2);font-family:var(--font-mono)}
+.row-a{font-size:17px;line-height:1;color:var(--ink-2)}
+.mock-foot{margin-top:22px;padding-top:12px;border-top:1px solid var(--line);font-size:11px;color:var(--ink-2)}
+.mock-foot a{color:var(--accent)}
+
+/* ---------------- D · 图纸 ---------------- */
+[data-dir="d"]{
+  --bg:#f7f9fb; --surface:#eef3f8; --ink:#16202b; --ink-2:#5d6b7a;
+  --line:#dde5ee; --accent:#1f5f8b; --accent-weak:#e4eef7; --grid:rgba(22,32,43,.05);
+  --font:'Fira Sans',-apple-system,"Noto Sans SC",sans-serif;
+  --font-mono:'Source Code Pro',ui-monospace,monospace;
+  --r:2px;
+}
+[data-theme="dark"] [data-dir="d"]{
+  --bg:#0d141b; --surface:#131c25; --ink:#dfe8f1; --ink-2:#8ea1b4;
+  --line:#22303d; --accent:#6fa8d0; --accent-weak:#16232f; --grid:rgba(223,232,241,.045);
+}
+[data-dir="d"] .mock-bar .logo{
+  width:auto;height:auto;font:500 11px var(--font-mono);letter-spacing:.06em;
+  color:var(--accent);
+}
+[data-dir="d"] .mock-bar .ghost{font-family:var(--font-mono);font-size:10px;letter-spacing:.06em}
+[data-dir="d"] .mock-body{
+  font-family:var(--font);font-size:14px;line-height:1.7;
+  background-image:linear-gradient(to right,var(--grid) 1px,transparent 1px),
+                   linear-gradient(to bottom,var(--grid) 1px,transparent 1px);
+  background-size:24px 24px;
+}
+[data-dir="d"] .mock-body h3{font-size:29px;font-weight:500;line-height:1.22;letter-spacing:-.01em}
+[data-dir="d"] .sec > h4{
+  font:500 11px var(--font-mono);text-transform:uppercase;letter-spacing:.1em;
+  padding-bottom:6px;border-bottom:1px solid var(--line);
+}
+[data-dir="d"] .row{padding:10px 0;border-bottom:1px dashed var(--line);border-radius:0;background:transparent}
+[data-dir="d"] .row:hover{background:var(--accent-weak)}
+[data-dir="d"] .row-ic{color:var(--accent)}
+[data-dir="d"] .row-n{font-size:10px;letter-spacing:.06em}
+[data-dir="d"] .row-a{display:none}
+
+/* ---------------- E · 苔 ---------------- */
+[data-dir="e"]{
+  --bg:#f4f5f0; --surface:#e9ece2; --ink:#20241e; --ink-2:#66705f;
+  --line:#dde1d6; --accent:#3f6b4f; --accent-weak:#e4ebe1;
+  --font:'Fira Sans',-apple-system,"Noto Sans SC",sans-serif;
+  --font-mono:'Source Code Pro',ui-monospace,monospace;
+  --r:4px;
+}
+[data-theme="dark"] [data-dir="e"]{
+  --bg:#101310; --surface:#1a1f18; --ink:#e6e8df; --ink-2:#99a394;
+  --line:#242a22; --accent:#8fbf7f; --accent-weak:#1c261a;
+}
+[data-dir="e"] .mock-bar .logo{
+  width:20px;height:20px;border-radius:50%;font-size:9px;
+  background:transparent;color:var(--accent);border:1px solid var(--accent);
+}
+[data-dir="e"] .mock-body{font-family:var(--font);font-size:14px;line-height:1.75}
+[data-dir="e"] .mock-body h3{font-size:30px;font-weight:500;line-height:1.24;letter-spacing:-.008em}
+[data-dir="e"] .sec > h4{
+  display:flex;align-items:center;gap:8px;
+  font-size:12px;font-weight:500;letter-spacing:.02em;color:var(--ink-2);
+}
+[data-dir="e"] .sec > h4::before{
+  content:"";width:16px;height:2px;border-radius:1px;background:var(--accent);
+}
+[data-dir="e"] .row{padding:11px 0;border-bottom:1px solid var(--line);border-radius:0;background:transparent}
+[data-dir="e"] .row:hover .row-t{color:var(--accent)}
+[data-dir="e"] .row-ic{color:var(--ink-2)}
+[data-dir="e"] .row-n{display:none}
+[data-dir="e"] .row-a{display:none}
+
+/* ---------------- F · 瑞士 ---------------- */
+[data-dir="f"]{
+  --bg:#ffffff; --surface:#f2f2f2; --ink:#111111; --ink-2:#5a5a5a;
+  --line:#111111; --line-soft:#e2e2e2; --accent:#e0331f; --accent-weak:#fdeeec;
+  --font:'Inter',-apple-system,"Noto Sans SC",sans-serif;
+  --font-mono:'Source Code Pro',ui-monospace,monospace;
+  --r:0px;
+}
+[data-theme="dark"] [data-dir="f"]{
+  --bg:#151515; --surface:#1f1f1f; --ink:#f2f2f2; --ink-2:#9a9a9a;
+  --line:#f2f2f2; --line-soft:#3a3a3a; --accent:#ff5a45; --accent-weak:#2a1613;
+}
+[data-dir="f"] .mock-bar{border-bottom:1px solid var(--line)}
+[data-dir="f"] .mock-bar .logo{
+  width:auto;height:auto;font:600 12px var(--font);letter-spacing:-.02em;
+  color:var(--ink);
+}
+[data-dir="f"] .mock-bar .logo::after{content:".";color:var(--accent)}
+[data-dir="f"] .mock-body{font-family:var(--font);font-size:14px;line-height:1.6;letter-spacing:-.006em}
+[data-dir="f"] .mock-body .eyebrow{letter-spacing:.16em;font-weight:500;color:var(--ink-2)}
+[data-dir="f"] .mock-body h3{font-size:31px;font-weight:600;line-height:1.1;letter-spacing:-.03em}
+[data-dir="f"] .sec > h4{
+  font:500 10px var(--font-mono);text-transform:uppercase;letter-spacing:.16em;
+  padding-bottom:7px;border-bottom:1px solid var(--line);color:var(--ink);
+}
+[data-dir="f"] .row{padding:10px 0;border-bottom:1px solid var(--line-soft);border-radius:0;background:transparent}
+[data-dir="f"] .row:hover .row-t{background:var(--accent-weak)}
+[data-dir="f"] .row-ic{color:var(--ink)}
+[data-dir="f"] .row-t{font-weight:500}
+[data-dir="f"] .row-n{display:none}
+[data-dir="f"] .row-a{display:none}
+[data-dir="f"] .mock-foot{border-top:1px solid var(--line)}
+
+/* ---------------- G · 编者 ---------------- */
+[data-dir="g"]{
+  --bg:#fdfcfa; --surface:#f4f3f0; --ink:#1a1a1a; --ink-2:#707070;
+  --line:#e8e6e2; --accent:#1a1a1a; --accent-weak:#efeeea;
+  --font:'Inter',-apple-system,"Noto Sans SC",sans-serif;
+  --font-mono:'Source Code Pro',ui-monospace,monospace;
+  --r:0px;
+}
+[data-theme="dark"] [data-dir="g"]{
+  --bg:#131313; --surface:#1c1c1c; --ink:#ededed; --ink-2:#8f8f8f;
+  --line:#2b2b2b; --accent:#ededed; --accent-weak:#232323;
+}
+[data-dir="g"] .mock-bar .logo{
+  width:auto;height:auto;font:500 12px var(--font-mono);letter-spacing:.1em;
+  color:var(--ink);
+}
+[data-dir="g"] .mock-body{font-family:var(--font);font-size:14px;line-height:1.75;letter-spacing:-.004em}
+[data-dir="g"] .mock-body h3{
+  font-size:32px;font-weight:500;line-height:1.15;letter-spacing:-.03em;
+}
+[data-dir="g"] .mock-body .sub{letter-spacing:0}
+[data-dir="g"] .sec > h4{
+  font:500 10px var(--font-mono);text-transform:uppercase;letter-spacing:.18em;
+  color:var(--ink-2);padding-bottom:10px;border-bottom:1px solid var(--line);
+}
+[data-dir="g"] .row{padding:12px 0;border-bottom:1px solid var(--line);border-radius:0;background:transparent;align-items:baseline}
+[data-dir="g"] .row:hover .row-t{text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1px}
+[data-dir="g"] .row-ic{display:none}
+[data-dir="g"] .row-t{font-weight:500;letter-spacing:-.01em}
+[data-dir="g"] .row-n{display:none}
+[data-dir="g"] .row-a{font-size:14px}
+[data-dir="g"] .mock-foot a{text-decoration:underline;text-underline-offset:2px}
+
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+.page-foot{margin-top:40px;padding-top:18px;border-top:1px solid var(--p-line-strong);color:var(--p-tx2);font-size:12px;line-height:1.8;max-width:76ch}
+.page-foot b{color:var(--p-tx);font-weight:500}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="page-head">
+    <div>
+      <p class="kicker">UI Direction · Batch II</p>
+      <h1>再四条：更有个性的克制</h1>
+    </div>
+    <div class="grow"></div>
+    <p>同样是「入口 / 项目 / 联系」三段骨架。色板标注浅色值，切换主题看深色表现。</p>
+    <div class="head-actions">
+      <a class="navlink" href="preview.html">← 批次一 A/B/C</a>
+      <button class="toggle" id="themeBtn" type="button">深色</button>
+    </div>
+  </header>
+
+  <div class="tiles">
+
+    <!-- ================= D ================= -->
+    <section class="tile" data-dir="d">
+      <div class="tile-head">
+        <div class="row1"><span class="idx">D</span><h2>图纸</h2></div>
+        <p class="claim">淡冷底 + 24px 极淡方格，编号用 mono 方括号，虚线分隔。工程感，但没有任何装饰性图形。</p>
+      </div>
+      <div class="swatches">
+        <span class="sw"><i style="background:var(--bg)"></i><b>#f7f9fb</b></span>
+        <span class="sw"><i style="background:var(--surface)"></i><b>#eef3f8</b></span>
+        <span class="sw"><i style="background:var(--ink)"></i><b>#16202b</b></span>
+        <span class="sw"><i style="background:var(--ink-2)"></i><b>#5d6b7a</b></span>
+        <span class="sw"><i style="background:var(--line)"></i><b>#dde5ee</b></span>
+        <span class="sw"><i style="background:var(--accent)"></i><b>#1f5f8b</b></span>
+      </div>
+      <dl class="spec">
+        <div><dt>字体</dt><dd>Fira Sans + Source Code Pro</dd></div>
+        <div><dt>圆角</dt><dd>2px 一档</dd></div>
+        <div><dt>特征</dt><dd>方格底纹、虚线行、编号</dd></div>
+        <div><dt>动效</dt><dd>仅颜色 120ms</dd></div>
+      </dl>
+      <div class="mock">
+        <div class="mock-bar">
+          <span class="logo">LX</span><span class="name">lcd-xvii</span>
+          <span class="spacer"></span><span class="ghost">[ 外观 ]</span>
+        </div>
+        <div class="mock-body">
+          <p class="eyebrow">lcd-xvii</p>
+          <h3>lcd-xvii</h3>
+          <p class="sub">一个人。</p>
+
+          <div class="sec">
+            <h4>01 / 入口</h4>
+            <a class="row" href="#"><span class="row-ic"><svg viewBox="0 0 24 24"><path d="M5 3.5h9l5 5v12H5z"/><path d="M14 3.5v5h5M8 13h8M8 16.5h8"/></svg></span><span class="row-tx"><span class="row-t">OI 文档</span><span class="row-d">题解、周总结与算法理论</span></span><span class="row-n">24 docs</span><span class="row-a">›</span></a>
+            <a class="row" href="#"><span class="row-ic"><svg viewBox="0 0 24 24"><path d="M3.5 6.5h6l2 2h9v10h-17z"/><path d="M3.5 8.5h17"/></svg></span><span class="row-tx"><span class="row-t">GitHub 仓库</span><span class="row-d">查看全部开源项目</span></span><span class="row-n">12 repos</span><span class="row-a">›</span></a>
+          </div>
+
+          <div class="sec">
+            <h4>02 / 联系</h4>
+            <a class="row" href="#"><span class="row-ic"><svg viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m3 7 8.2 5.6a1.5 1.5 0 0 0 1.6 0L21 7"/></svg></span><span class="row-tx"><span class="row-t">Email</span><span class="row-d">lcd-xvii@outlook.com</span></span><span class="row-n">mailto</span><span class="row-a">›</span></a>
+          </div>
+
+          <div class="mock-foot">© 2026 lcd-xvii · <a href="#">Cloudflare 主站</a></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= E ================= -->
+    <section class="tile" data-dir="e">
+      <div class="tile-head">
+        <div class="row1"><span class="idx">E</span><h2>苔</h2></div>
+        <p class="claim">灰绿纸底 + 苔绿强调，小标题前一条 16px 短线。安静、偏自然，比 A 少一点「印刷」，多一点「呼吸」。</p>
+      </div>
+      <div class="swatches">
+        <span class="sw"><i style="background:var(--bg)"></i><b>#f4f5f0</b></span>
+        <span class="sw"><i style="background:var(--surface)"></i><b>#e9ece2</b></span>
+        <span class="sw"><i style="background:var(--ink)"></i><b>#20241e</b></span>
+        <span class="sw"><i style="background:var(--ink-2)"></i><b>#66705f</b></span>
+        <span class="sw"><i style="background:var(--line)"></i><b>#dde1d6</b></span>
+        <span class="sw"><i style="background:var(--accent)"></i><b>#3f6b4f</b></span>
+      </div>
+      <dl class="spec">
+        <div><dt>字体</dt><dd>Fira Sans + Source Code Pro</dd></div>
+        <div><dt>圆角</dt><dd>4px 一档</dd></div>
+        <div><dt>特征</dt><dd>短线标记、环形 logo</dd></div>
+        <div><dt>动效</dt><dd>仅颜色 150ms</dd></div>
+      </dl>
+      <div class="mock">
+        <div class="mock-bar">
+          <span class="logo">LX</span><span class="name">lcd-xvii</span>
+          <span class="spacer"></span><span class="ghost">外观</span>
+        </div>
+        <div class="mock-body">
+          <p class="eyebrow">lcd-xvii</p>
+          <h3>lcd-xvii</h3>
+          <p class="sub">一个人。</p>
+
+          <div class="sec">
+            <h4>入口</h4>
+            <a class="row" href="#"><span class="row-ic"><svg viewBox="0 0 24 24"><path d="M5 3.5h9l5 5v12H5z"/><path d="M14 3.5v5h5M8 13h8M8 16.5h8"/></svg></span><span class="row-tx"><span class="row-t">OI 文档</span><span class="row-d">题解、周总结与算法理论</span></span><span class="row-n">24</span><span class="row-a">›</span></a>
+            <a class="row" href="#"><span class="row-ic"><svg viewBox="0 0 24 24"><path d="M3.5 6.5h6l2 2h9v10h-17z"/><path d="M3.5 8.5h17"/></svg></span><span class="row-tx"><span class="row-t">GitHub 仓库</span><span class="row-d">查看全部开源项目</span></span><span class="row-n">12</span><span class="row-a">›</span></a>
+          </div>
+
+          <div class="sec">
+            <h4>联系</h4>
+            <a class="row" href="#"><span class="row-ic"><svg viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m3 7 8.2 5.6a1.5 1.5 0 0 0 1.6 0L21 7"/></svg></span><span class="row-tx"><span class="row-t">Email</span><span class="row-d">lcd-xvii@outlook.com</span></span><span class="row-n">—</span><span class="row-a">›</span></a>
+          </div>
+
+          <div class="mock-foot">© 2026 lcd-xvii · <a href="#">Cloudflare 主站</a></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= F ================= -->
+    <section class="tile" data-dir="f">
+      <div class="tile-head">
+        <div class="row1"><span class="idx">F</span><h2>瑞士</h2></div>
+        <p class="claim">零圆角、黑 1px 线、大写小标签、一个信号红。性格最强，但每个元素的位置都必须是网格决定的。</p>
+      </div>
+      <div class="swatches">
+        <span class="sw"><i style="background:var(--bg)"></i><b>#ffffff</b></span>
+        <span class="sw"><i style="background:var(--surface)"></i><b>#f2f2f2</b></span>
+        <span class="sw"><i style="background:var(--ink)"></i><b>#111111</b></span>
+        <span class="sw"><i style="background:var(--ink-2)"></i><b>#5a5a5a</b></span>
+        <span class="sw"><i style="background:var(--line)"></i><b>#111111</b></span>
+        <span class="sw"><i style="background:var(--accent)"></i><b>#e0331f</b></span>
+      </div>
+      <dl class="spec">
+        <div><dt>字体</dt><dd>Inter + Source Code Pro（新增 1 字族）</dd></div>
+        <div><dt>圆角</dt><dd>0</dd></div>
+        <div><dt>特征</dt><dd>黑线、大写标签、字重对比</dd></div>
+        <div><dt>动效</dt><dd>仅背景 100ms</dd></div>
+      </dl>
+      <div class="mock">
+        <div class="mock-bar">
+          <span class="logo">LX</span><span class="name">lcd-xvii</span>
+          <span class="spacer"></span><span class="ghost">外观</span>
+        </div>
+        <div class="mock-body">
+          <p class="eyebrow">lcd-xvii</p>
+          <h3>lcd-xvii</h3>
+          <p class="sub">一个人。</p>
+
+          <div class="sec">
+            <h4>入口 / Entry</h4>
+            <a class="row" href="#"><span class="row-ic"><svg viewBox="0 0 24 24"><path d="M5 3.5h9l5 5v12H5z"/><path d="M14 3.5v5h5M8 13h8M8 16.5h8"/></svg></span><span class="row-tx"><span class="row-t">OI 文档</span><span class="row-d">题解、周总结与算法理论</span></span><span class="row-n">24</span><span class="row-a">›</span></a>
+            <a class="row" href="#"><span class="row-ic"><svg viewBox="0 0 24 24"><path d="M3.5 6.5h6l2 2h9v10h-17z"/><path d="M3.5 8.5h17"/></svg></span><span class="row-tx"><span class="row-t">GitHub 仓库</span><span class="row-d">查看全部开源项目</span></span><span class="row-n">12</span><span class="row-a">›</span></a>
+          </div>
+
+          <div class="sec">
+            <h4>联系 / Contact</h4>
+            <a class="row" href="#"><span class="row-ic"><svg viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m3 7 8.2 5.6a1.5 1.5 0 0 0 1.6 0L21 7"/></svg></span><span class="row-tx"><span class="row-t">Email</span><span class="row-d">lcd-xvii@outlook.com</span></span><span class="row-n">—</span><span class="row-a">›</span></a>
+          </div>
+
+          <div class="mock-foot">© 2026 lcd-xvii · <a href="#">Cloudflare 主站</a></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= G ================= -->
+    <section class="tile" data-dir="g">
+      <div class="tile-head">
+        <div class="row1"><span class="idx">G</span><h2>编者</h2></div>
+        <p class="claim">完全不用彩色：层级只靠字重、字距和下划线。最克制的一条，也最考验内容本身。</p>
+      </div>
+      <div class="swatches">
+        <span class="sw"><i style="background:var(--bg)"></i><b>#fdfcfa</b></span>
+        <span class="sw"><i style="background:var(--surface)"></i><b>#f4f3f0</b></span>
+        <span class="sw"><i style="background:var(--ink)"></i><b>#1a1a1a</b></span>
+        <span class="sw"><i style="background:var(--ink-2)"></i><b>#707070</b></span>
+        <span class="sw"><i style="background:var(--line)"></i><b>#e8e6e2</b></span>
+        <span class="sw"><i style="background:var(--accent)"></i><b>#1a1a1a</b></span>
+      </div>
+      <dl class="spec">
+        <div><dt>字体</dt><dd>Inter + Source Code Pro（新增 1 字族）</dd></div>
+        <div><dt>圆角</dt><dd>0</dd></div>
+        <div><dt>特征</dt><dd>无彩色强调、下划线、大字距反差</dd></div>
+        <div><dt>动效</dt><dd>无（仅 hover 下划线）</dd></div>
+      </dl>
+      <div class="mock">
+        <div class="mock-bar">
+          <span class="logo">LX</span><span class="name">lcd-xvii</span>
+          <span class="spacer"></span><span class="ghost">外观</span>
+        </div>
+        <div class="mock-body">
+          <p class="eyebrow">lcd-xvii</p>
+          <h3>lcd-xvii</h3>
+          <p class="sub">一个人。</p>
+
+          <div class="sec">
+            <h4>入口</h4>
+            <a class="row" href="#"><span class="row-ic"><svg viewBox="0 0 24 24"><path d="M5 3.5h9l5 5v12H5z"/></svg></span><span class="row-tx"><span class="row-t">OI 文档</span><span class="row-d">题解、周总结与算法理论</span></span><span class="row-n">24</span><span class="row-a">›</span></a>
+            <a class="row" href="#"><span class="row-ic"><svg viewBox="0 0 24 24"><path d="M3.5 6.5h6l2 2h9v10h-17z"/></svg></span><span class="row-tx"><span class="row-t">GitHub 仓库</span><span class="row-d">查看全部开源项目</span></span><span class="row-n">12</span><span class="row-a">›</span></a>
+          </div>
+
+          <div class="sec">
+            <h4>联系</h4>
+            <a class="row" href="#"><span class="row-ic"><svg viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/></svg></span><span class="row-tx"><span class="row-t">Email</span><span class="row-d">lcd-xvii@outlook.com</span></span><span class="row-n">—</span><span class="row-a">›</span></a>
+          </div>
+
+          <div class="mock-foot">© 2026 lcd-xvii · <a href="#">Cloudflare 主站</a></div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <p class="page-foot">
+    <b>这四条的共同底线</b>：仍只有一种强调色、一种分隔线颜色、至多一档圆角、至多一档阴影（浮层）；位移与缩放类动效为 0；主题切换只靠变量覆盖。差别只在「用什么方式分层」——D 用方格与编号，E 用短线与呼吸，F 用黑线与字重，G 只用字重与下划线。
+  </p>
+
+</div>
+<script>
+(function () {
+  var btn = document.getElementById('themeBtn');
+  var root = document.documentElement;
+  var saved = null;
+  try { saved = localStorage.getItem('ui-tile-theme'); } catch (e) {}
+  if (saved === 'dark' || saved === 'light') root.dataset.theme = saved;
+  function sync() { btn.textContent = root.dataset.theme === 'dark' ? '浅色' : '深色'; }
+  sync();
+  btn.addEventListener('click', function () {
+    root.dataset.theme = root.dataset.theme === 'dark' ? 'light' : 'dark';
+    try { localStorage.setItem('ui-tile-theme', root.dataset.theme); } catch (e) {}
+    sync();
+  });
+})();
+</script>
+</body>
+</html>

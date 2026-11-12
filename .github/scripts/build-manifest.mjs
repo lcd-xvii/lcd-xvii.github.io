@@ -1,7 +1,26 @@
 import { readdir, readFile, writeFile } from 'node:fs/promises';
+import { execFileSync } from 'node:child_process';
 import { join, relative, sep } from 'node:path';
 
 const ROOT = join(process.cwd(), 'oi-docs');
+const DOCS_DIR_NAME = 'oi-docs';
+
+/**
+ * 取某篇文档最后一次提交的日期（YYYY-MM-DD）。
+ * 浅克隆或没有 git 时返回空字符串——主页会退回到 generatedAt。
+ */
+function lastCommitDate(relPath) {
+  try {
+    const out = execFileSync(
+      'git',
+      ['log', '-1', '--date=short', '--format=%ad', '--', `${DOCS_DIR_NAME}/${relPath}`],
+      { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }
+    ).trim();
+    return /^\d{4}-\d{2}-\d{2}$/.test(out) ? out : '';
+  } catch (error) {
+    return '';
+  }
+}
 const EXCLUDE_DIRS = new Set(['.git', 'node_modules', '.github', 'vendor']);
 
 async function walk(dir, out = []) {
@@ -91,7 +110,8 @@ for (const file of files) {
   const date = typeof meta.date === 'string' ? meta.date : (meta.date ? String(meta.date) : '');
   const summary = typeof meta.summary === 'string' ? meta.summary : '';
 
-  docs.push({ path: rel, title, category, tags, date, summary });
+  const updated = date || lastCommitDate(rel);
+  docs.push({ path: rel, title, category, tags, date, updated, summary });
   searchIndex.push({ path: rel, sections: splitSections(body) });
 }
 

@@ -4,8 +4,15 @@
 
 - `/`：个人主页（`index.html`）
 - `/oi-docs/`：OI 文档（由原 `lcd-xvii/oi-docs` 仓库迁移而来）
-- `assets/css/app.css`：主页与文档共用的 rustdoc 风格样式
-- `assets/css/home.css`：主页专用布局（无动画/过渡）
+- `assets/css/tokens.css`：设计系统 token（暖米白 × 赤陶 × 无衬线，单浅色主题），主页与文档页共用
+- `assets/css/home.css`：主页样式（GitHub 式两栏：左侧身份与联系，右侧入口卡片 + 贡献墙 + 最近）
+- `assets/css/app.css`：`/oi-docs` 界面样式（依赖 `tokens.css`）
+- `assets/js/home.js`：主页的「最近 / 贡献墙」，按 `SOURCES` 声明式取数据；加一个来源就能多一类条目
+- `design/`：设计过程与预览（`ui-direction.md`、`preview*.html`、`draft/` 上一版衬线草稿、`shots/`），不参与站点导航
+
+设计约定：正文 Inter、代码 Roboto Mono（仅此两族）；字号四级（30 / 20 / 18 / 15，文档导航 16）；
+版式参考 GitHub 个人主页：容器 1280、左栏 296、头像 260、贡献墙 12px 方格 / 2px 间距；
+一种强调色（赤陶，只给链接悬停、标签、小面积高亮）；1px 线分层；零渐变、页面内零阴影；单浅色主题。
 
 线上地址：
 
@@ -30,7 +37,9 @@ Workers 静态资源配置见 `wrangler.toml` 和 `.assetsignore`；`worker.mjs`
 
 ## 文档索引
 
-Markdown 变更时由 `.github/workflows/build-manifest.yml` 自动生成索引；部署工作流也会在发布前重新生成：
+Markdown 变更时由 `.github/workflows/build-manifest.yml` 自动生成索引；部署工作流也会在发布前重新生成。
+生成的 `manifest.json` 里每篇文档带 `updated`（最后一次提交日期，来自 `git log`），主页的
+「最近」与「贡献墙」就读这个字段——因此工作流里 checkout 需要 `fetch-depth: 0`：
 
 ```sh
 node .github/scripts/build-manifest.mjs

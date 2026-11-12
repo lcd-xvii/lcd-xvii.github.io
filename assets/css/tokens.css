@@ -1,0 +1,137 @@
+/* ============================================================
+ * 设计系统 token（主页与 /oi-docs 共用）
+ * ------------------------------------------------------------
+ * 暖米白纸面 + 赤陶强调 + 全无衬线排版（Inter），代码用 Roboto Mono。
+ * 规则：字号 4 级、一种强调色、1px 线分层、零渐变、页面内零阴影。
+ * ============================================================ */
+
+:root{
+  /* ---------- 颜色 ---------- */
+  --bg:#FAF7F1;              /* 暖调米白 */
+  --surface:#F3EEE5;         /* 次要表面（卡片内凹、侧栏、代码块底） */
+  --surface-2:#EFE9DE;       /* 更深的表面（悬停、表头） */
+  --ink:#1B1A17;             /* 墨色 16.3:1 */
+  --ink-2:#5A554B;           /* 次要文本 6.9:1 */
+  --ink-3:#6E6859;           /* 三级文本 5.1:1 */
+  --border:#E6DFD2;          /* 边框 */
+  --border-strong:#D8CFBF;   /* 更强边框 */
+  --border-hover:#D9B5A4;    /* 悬停边框（赤陶淡化） */
+
+  --accent:#AC4E34;          /* 赤陶 5.0:1 */
+  --accent-tint:#F4E4DB;     /* 柔和填充 */
+  --accent-ink:#8E4028;      /* tint 上的文字 5.8:1 */
+
+  /* 贡献墙色阶（无文字，只做视觉密度） */
+  --wall-0:#EAE3D6;
+  --wall-1:#F0D3C2;
+  --wall-2:#D79A7C;
+  --wall-3:#AC4E34;
+
+  /* ---------- 排版：全无衬线 ---------- */
+  --font-sans:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans SC','PingFang SC','Microsoft YaHei',sans-serif;
+  --font-mono:'Roboto Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+
+  --text-display:clamp(26px,2.4vw,30px);   /* 姓名 / 文档标题 */
+  --text-title:20px;                       /* 区块标题、卡片标题 */
+  --text-body:18px;                        /* 正文、说明 */
+  --text-meta:15px;                        /* 眉标、日期、页脚、药丸、控件 */
+  --text-ui:16px;                          /* 列表项、侧栏条目、目录 */
+
+  --leading-display:1.2;
+  --leading-title:1.35;
+  --leading-body:1.7;
+  --leading-reading:1.8;                   /* 文档正文 */
+  --leading-meta:1.5;
+
+  --reading-size:18px;                     /* 文档正文（设置里可调） */
+
+  /* ---------- 布局 ---------- */
+  --maxw:1280px;
+  --gutter:clamp(20px,3.2vw,40px);
+  --section-gap:clamp(40px,4vw,56px);
+  --grid-gap:16px;
+  --radius:10px;                           /* 卡片 / 浮层 */
+  --radius-sm:8px;                         /* 控件 */
+  --radius-pill:999px;
+  --line:1px;
+  --topbar-h:64px;
+  --sidebar-w:296px;
+  --article-max-width:780px;
+  --wall-cell:12px;                        /* 贡献墙方格（GitHub 官方 11px，我们取 12 略放大 */
+
+  /* ---------- 代码配色（暖纸上的低饱和语法色） ---------- */
+  --code-bg:#F4EFE6;
+  --code-fg:#1B1A17;
+  --hl-keyword:#A34E32;
+  --hl-string:#527143;
+  --hl-number:#8E6528;
+  --hl-title:#2F5D6E;
+  --hl-type:#7A4A63;
+  --hl-comment:#726B5C;
+  --hl-attr:#8A5A2B;
+  --hl-name:#2F5D6E;
+  --hl-builtin:#7A4A63;
+  --hl-add-fg:#4F6E42;
+  --hl-add-bg:#E8EFE2;
+  --hl-del-fg:#9E4230;
+  --hl-del-bg:#F7E4DF;
+
+  /* ---------- 动效 ---------- */
+  --ease:cubic-bezier(.2,.7,.3,1);
+  --t-fast:160ms;
+  --t-card:200ms;
+  --t-reveal:480ms;
+}
+
+/* ---------- 基座 ---------- */
+*,*::before,*::after{box-sizing:border-box}
+
+html{
+  background:var(--bg);
+  -webkit-text-size-adjust:100%;
+}
+
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--ink);
+  font-family:var(--font-sans);
+  font-size:var(--text-body);
+  line-height:var(--leading-body);
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+  font-feature-settings:"kern" 1;
+}
+
+a{color:inherit;text-decoration:none}
+::selection{background:var(--accent-tint);color:var(--accent-ink)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:2px}
+
+/* 标题：无衬线、600，字距略收 */
+h1,h2,h3{font-family:var(--font-sans);font-weight:600;margin:0;letter-spacing:-.02em}
+h1{font-size:var(--text-display);line-height:var(--leading-display)}
+h2{font-size:var(--text-title);line-height:var(--leading-title);letter-spacing:-.012em}
+
+/* 数字：表格数字，不额外引入字族 */
+.tnum{font-variant-numeric:tabular-nums}
+
+/* 跳转正文（无障碍） */
+.skip-main-content{
+  position:absolute;left:16px;top:-100%;z-index:999;
+  padding:8px 14px;
+  border:var(--line) solid var(--border-strong);
+  border-radius:var(--radius-sm);
+  background:var(--bg);
+  color:var(--ink);
+  font-size:var(--text-meta);
+}
+.skip-main-content:focus{top:12px}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{
+    animation-duration:.001ms !important;
+    animation-iteration-count:1 !important;
+    transition-duration:.001ms !important;
+    scroll-behavior:auto !important;
+  }
+}
